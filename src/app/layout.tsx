@@ -1,5 +1,20 @@
 import type { Metadata } from "next";
+import { Nunito_Sans, Sansita } from 'next/font/google';
 import "./globals.css";
+
+const nunito_sans = Nunito_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-nunito-sans',
+  weight: ['300', '400', '600'],
+});
+
+const sansita = Sansita({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sansita',
+  weight: ['400', '700'],
+});
 
 export const metadata: Metadata = {
   title: "Alo! Coffee and Bakery",
@@ -8,12 +23,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600&family=Sansita:wght@400;700&display=swap" rel="stylesheet" />
-      </head>
+    <html lang="en" className={`${nunito_sans.variable} ${sansita.variable}`}>
       <body className="font-nunito">{children}</body>
     </html>
   );

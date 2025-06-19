@@ -24,8 +24,9 @@ export async function POST(req: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-  } catch (err: any) {
-    return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Webhook error';
+    return NextResponse.json({ error: `Webhook error: ${message}` }, { status: 400 });
   }
 
   // Handle the checkout.session.completed event
@@ -48,7 +49,7 @@ export async function POST(req: NextRequest) {
         body: messageBody,
       });
       console.log('WhatsApp message sent successfully.');
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to send WhatsApp message:', error);
       // Even if WhatsApp fails, we return a 200 to Stripe so it doesn't retry.
       // The error is logged for debugging.

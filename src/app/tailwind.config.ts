@@ -1,19 +1,23 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
-  content: ["./src/**/*.{js,ts,jsx,tsx}"],
+  content: [
+    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
   theme: {
     extend: {
       fontFamily: {
-        sansita: ["Sansita", "sans-serif"],
-        nunito: ["Nunito Sans", "sans-serif"],
+        sansita: ['var(--font-sansita)'],
+        nunito: ['var(--font-nunito-sans)'],
       },
       colors: {
-        parchment: "#F5F5DC", // Light beige
-        richBlack: "#0A192F", // Deep blue-black
-        teal: "#008080", // Teal
-        cambridgeBlue: "#A3C1AD", // Muted blue-green
-        ashGray: "#B2BEB5", // Light gray
+        parchment: '#FDF9F0',
+        richBlack: '#0D0D0D',
+        cambridgeBlue: '#69A297',
+        teal: '#3E838C',
+        ashGray: '#CAD4CB',
       },
     },
   },

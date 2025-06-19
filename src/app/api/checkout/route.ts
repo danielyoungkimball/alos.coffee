@@ -5,11 +5,18 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   typescript: true,
 });
 
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  qty: number;
+}
+
 export async function POST(req: NextRequest) {
-  const { cart, name, apartment } = await req.json();
+  const { cart, name, apartment }: { cart: CartItem[], name: string, apartment: string } = await req.json();
 
   try {
-    const line_items = cart.map((item: any) => ({
+    const line_items = cart.map((item: CartItem) => ({
       price_data: {
         currency: 'mxn',
         product_data: {
@@ -29,12 +36,13 @@ export async function POST(req: NextRequest) {
       metadata: {
         name,
         apartment,
-        order: JSON.stringify(cart.map((i: any) => `${i.qty} x ${i.name}`)),
+        order: JSON.stringify(cart.map((i: CartItem) => `${i.qty} x ${i.name}`)),
       },
     });
 
     return NextResponse.json({ sessionId: session.id });
-  } catch (err: any) {
-    return NextResponse.json({ error: { message: err.message } }, { status: 500 });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'An unknown error occurred.';
+    return NextResponse.json({ error: { message } }, { status: 500 });
   }
 } 
