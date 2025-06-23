@@ -1,13 +1,70 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@300;400;600&family=Sansita:wght@400;700&display=swap");
 @import "tailwindcss";
 
-body {
-  font-family: "Nunito Sans", sans-serif !important;
+:root {
+  --background: #F5EEE6;
+  --foreground: #231F20;
+  --espresso: #4B2E19;
+  --parchment: #FFFDF9;
+  --cambridgeBlue: #69A297;
+  --teal: #3E838C;
+  --ashGray: #CAD4CB;
+  --accent: #B08968;
+  --card: #FFFDF9;
+  --card-shadow: 0 2px 12px 0 rgba(75,46,25,0.08);
 }
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+body {
+  font-family: "Nunito Sans", sans-serif !important;
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.text-espresso { color: var(--espresso); }
+.bg-espresso { background: var(--espresso); }
+.bg-parchment { background: var(--parchment); }
+.text-parchment { color: var(--parchment); }
+.bg-accent { background: var(--accent); }
+.text-accent { color: var(--accent); }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Sansita", sans-serif !important;
+  font-weight: 700;
+  color: var(--espresso);
+}
+
+.menu-card {
+  background: var(--card);
+  border-radius: 1rem;
+  box-shadow: var(--card-shadow);
+  color: var(--foreground);
+  padding: 1.5rem;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.menu-card:hover {
+  box-shadow: 0 4px 24px 0 rgba(75,46,25,0.16);
+  transform: translateY(-2px) scale(1.02);
+}
+
+a {
+  transition: color 0.2s;
+}
+a:hover {
+  color: var(--accent);
+}
+
+input, textarea {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  color: #222;
+}
+
+button {
+  transition: background 0.2s, color 0.2s;
+}
+
+nav, footer {
+  font-family: "Sansita", sans-serif !important;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -15,8 +72,4 @@ body {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: "Sansita", sans-serif !important;
 } 

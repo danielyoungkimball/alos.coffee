@@ -124,13 +124,13 @@ export default function Home() {
     
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
-        <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4">Menú</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+        <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-espresso">Menú</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-3xl">
           {MENU.map(item => (
-            <div key={item.id} className="bg-white bg-opacity-80 rounded-lg shadow p-4 flex flex-col items-center">
-              <span className="font-bold text-lg">{item.name}</span>
-              <span className="text-cambridgeBlue mb-2">${item.price} MXN</span>
-              <button onClick={() => addToCart(item)} className="px-3 py-1 bg-teal text-parchment rounded hover:bg-ashGray transition-colors">Agregar</button>
+            <div key={item.id} className="menu-card flex flex-col items-center">
+              <span className="font-bold text-lg mb-1">{item.name}</span>
+              <span className="text-cambridgeBlue mb-2 font-semibold">${item.price} MXN</span>
+              <button onClick={() => addToCart(item)} className="px-3 py-1 bg-teal text-parchment rounded hover:bg-accent transition-colors">Agregar</button>
             </div>
           ))}
         </div>

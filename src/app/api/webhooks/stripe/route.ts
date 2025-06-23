@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import logger from '@/lib/logger';
 
 async function sendWhatsAppMessage(to: string, message: string) {
-  const url = `https://graph.facebook.com/v19.0/${process.env.META_PHONE_NUMBER_ID}/messages`;
+  const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_ID}/messages`;
   const payload = {
     messaging_product: 'whatsapp',
     to,
