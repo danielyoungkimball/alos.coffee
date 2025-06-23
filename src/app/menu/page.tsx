@@ -8,7 +8,7 @@ export default function Menu() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <h3 className="font-semibold text-lg mb-1">Frío o Caliente</h3>
-              <ul className="text-richBlack">
+              <ul className="text-black">
                 <li>Americano <span className="float-right">$60</span></li>
                 <li>Cappuchino <span className="float-right">$65</span></li>
                 <li>Moka <span className="float-right">$90</span></li>
@@ -23,7 +23,7 @@ export default function Menu() {
             </div>
             <div>
               <h3 className="font-semibold text-lg mb-1">Jugos</h3>
-              <ul className="text-richBlack">
+              <ul className="text-black">
                 <li>Naranja <span className="float-right">$60</span></li>
                 <li>Verde <span className="float-right">$80</span></li>
                 <li className="text-xs">(Jugo de naranja, nopal, espinaca, apio, piña)</li>
@@ -36,7 +36,7 @@ export default function Menu() {
           <h2 className="text-2xl font-bold mb-2 text-espresso">Alimentos</h2>
           <div className="bg-white bg-opacity-80 rounded-lg shadow p-6">
             <h3 className="font-semibold text-lg mb-2">Repostería</h3>
-            <ul className="text-richBlack mb-4">
+            <ul className="text-black mb-4">
               <li>Postre de la semana <span className="float-right">(Preguntar por disponibilidad)</span></li>
               <li>Crepas de avena <span className="float-right">$75</span>
                 <ul className="ml-4 text-xs list-disc">
