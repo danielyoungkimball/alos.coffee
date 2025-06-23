@@ -128,9 +128,9 @@ export default function Home() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full max-w-3xl">
           {MENU.map(item => (
             <div key={item.id} className="menu-card flex flex-col items-center">
-              <span className="font-bold text-lg mb-1">{item.name}</span>
-              <span className="text-cambridgeBlue mb-2 font-semibold">${item.price} MXN</span>
-              <button onClick={() => addToCart(item)} className="px-3 py-1 bg-teal text-parchment rounded hover:bg-accent transition-colors">Agregar</button>
+              <span className="font-bold text-lg mb-1 text-espresso">{item.name}</span>
+              <span className="mb-2 font-semibold text-black">${item.price} MXN</span>
+              <button onClick={() => addToCart(item)} className="px-3 py-1 bg-teal text-black rounded hover:bg-accent transition-colors">Agregar</button>
             </div>
           ))}
         </div>
