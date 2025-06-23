@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { loadStripe } from '@stripe/stripe-js';
+import clientLogger from '@/lib/clientLogger';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -29,8 +30,10 @@ export default function Home() {
   const [name, setName] = useState("");
   const [apartment, setApartment] = useState("");
   const [payment, setPayment] = useState("stripe");
+  const [phone, setPhone] = useState("");
 
   function addToCart(item: { id: number; name: string; price: number }) {
+    clientLogger.info('Add to cart', item);
     setCart((prev) => {
       const found = prev.find((i) => i.id === item.id);
       if (found) {
@@ -42,26 +45,40 @@ export default function Home() {
   }
 
   function removeFromCart(id: number) {
+    clientLogger.info('Remove from cart', id);
     setCart((prev) => prev.filter((i) => i.id !== id));
   }
 
   function updateQty(id: number, qty: number) {
+    clientLogger.info('Update quantity', { id, qty });
     setCart((prev) => prev.map((i) => i.id === id ? { ...i, qty } : i));
   }
 
   async function handleCheckout(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    clientLogger.info('Checkout submitted', { name, apartment, cart, payment, phone });
     if (!name || !apartment || cart.length === 0) {
+      clientLogger.warn('Checkout validation failed', { name, apartment, cart });
       alert("Por favor llena tu nombre, apartamento y agrega productos al carrito.");
       return;
     }
 
     if (payment === 'cash') {
-      const orderDetails = cart.map(i => `${i.qty} x ${i.name}`).join(", ");
-      const message = encodeURIComponent(
-        `Hola Alondra!\n\nMi nombre es: ${name}\nApartamento/cuarto: ${apartment}\nPedido: ${orderDetails}\nPago: Efectivo`
-      );
-      window.open(`https://wa.me/525532326693?text=${message}`, '_blank');
+      try {
+        const response = await fetch('/api/cash-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart, name, apartment, phone }),
+        });
+        if (!response.ok) throw new Error('No se pudo enviar el pedido.');
+        clientLogger.info('Cash order sent successfully');
+        alert('¡Pedido enviado! Alondra ha sido notificada por WhatsApp.');
+        setCart([]);
+        setShowCart(false);
+      } catch (error) {
+        clientLogger.error('Error sending cash order', error);
+        alert('Hubo un error al enviar el pedido. Intenta de nuevo.');
+      }
       return;
     }
 
@@ -75,17 +92,19 @@ export default function Home() {
 
       const { sessionId } = await response.json();
       if (!sessionId) {
+        clientLogger.error('Failed to create Stripe session');
         throw new Error('Failed to create Stripe session');
       }
 
       const stripe = await stripePromise;
       if (!stripe) {
+        clientLogger.error('Stripe.js not loaded');
         throw new Error('Stripe.js not loaded');
       }
-      
+      clientLogger.info('Redirecting to Stripe checkout', { sessionId });
       await stripe.redirectToCheckout({ sessionId });
     } catch (error) {
-      console.error(error);
+      clientLogger.error('Stripe checkout error', error);
       alert("Hubo un error al procesar el pago. Por favor, intenta de nuevo.");
     }
   }
@@ -95,7 +114,7 @@ export default function Home() {
       {/* Navbar */}
       <nav className="flex justify-between items-center p-4 md:p-6 bg-richBlack text-parchment font-sansita">
         <h1 className="text-2xl md:text-3xl font-bold">Alo! Coffee and Bakery</h1>
-        <button onClick={() => setShowCart((v) => !v)} className="relative">
+        <button onClick={() => setShowCart((v) => { clientLogger.info('Toggle cart', !v); return !v; })} className="relative">
           🛒
           {cart.length > 0 && (
             <span className="absolute -top-2 -right-2 bg-teal text-parchment rounded-full px-2 text-xs">{cart.reduce((a, b) => a + b.qty, 0)}</span>
@@ -139,12 +158,13 @@ export default function Home() {
               <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                 <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300" placeholder="Tu nombre" />
                 <input value={apartment} onChange={e => setApartment(e.target.value)} required className="p-2 rounded border border-gray-300" placeholder="Apartamento / Cuarto" />
+                <input value={phone} onChange={e => setPhone(e.target.value)} required className="p-2 rounded border border-gray-300" placeholder="Tu teléfono (WhatsApp)" />
                 <div className="flex gap-4 items-center">
                   <label className="flex items-center gap-1">
-                    <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => setPayment("stripe")} /> Pago en línea
+                    <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => { setPayment("stripe"); clientLogger.info('Payment method selected', 'stripe'); }} /> Pago en línea
                   </label>
                   <label className="flex items-center gap-1">
-                    <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => setPayment("cash")} /> Efectivo
+                    <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
                   </label>
                 </div>
                 <button type="submit" className="mt-2 px-4 py-2 bg-teal text-parchment rounded font-bold hover:bg-ashGray transition-colors w-full">Finalizar pedido</button>
