@@ -34,16 +34,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .menu-card {
-  background: var(--card);
+  background: #F5EEE6;
   border-radius: 1rem;
-  box-shadow: var(--card-shadow);
+  box-shadow: 0 4px 24px 0 rgba(75,46,25,0.16);
   color: var(--foreground);
   padding: 1.5rem;
+  border: 1.5px solid #E0D6C3;
+  font-weight: 600;
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .menu-card:hover {
-  box-shadow: 0 4px 24px 0 rgba(75,46,25,0.16);
-  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 32px 0 rgba(75,46,25,0.22);
+  transform: translateY(-2px) scale(1.03);
 }
 
 a {
