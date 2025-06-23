@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import logger from '@/lib/logger';
 
+type CartItem = { id: number; name: string; price: number; qty: number };
+
 async function sendWhatsAppMessage(to: string, message: string) {
   const url = `https://graph.facebook.com/v19.0/${process.env.META_PHONE_NUMBER_ID}/messages`;
   const payload = {
@@ -30,8 +32,8 @@ export async function POST(req: Request) {
   logger.info('Received cash order POST request');
   const { cart, name, apartment, phone } = await req.json();
   logger.info({ cart, name, apartment, phone }, 'Cash order details');
-  const total = cart.reduce((sum: number, item: any) => sum + item.price * item.qty, 0);
-  const orderList = cart.map((item: any) => `${item.qty}x ${item.name} - $${item.price * item.qty} MXN`).join('\n');
+  const total = (cart as CartItem[]).reduce((sum, item) => sum + item.price * item.qty, 0);
+  const orderList = (cart as CartItem[]).map((item) => `${item.qty}x ${item.name} - $${item.price * item.qty} MXN`).join('\n');
   const phoneLine = phone ? `\n📱 Teléfono del cliente: ${phone}\n💬 WhatsApp: https://wa.me/${phone.replace(/[^\d]/g, '')}` : '';
   const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}\n${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: Pago pendiente en efectivo 💵\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
   try {

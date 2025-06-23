@@ -1,12 +1,13 @@
 // Simple client logger for user interactions
 const isProd = process.env.NODE_ENV === 'production';
 
-function log(level: 'info' | 'warn' | 'error', ...args: any[]) {
+function log(level: 'info' | 'warn' | 'error', ...args: unknown[]) {
   console.log('hit');
   console.log('isProd', isProd);
   if (!isProd) {
     // In dev, log to the browser console
-    console[level](...args);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (console as any)[level](...args);
   } else {
     // In prod, optionally send logs to a backend endpoint
     // fetch('/api/log', { method: 'POST', body: JSON.stringify({ level, args }) });
@@ -14,9 +15,9 @@ function log(level: 'info' | 'warn' | 'error', ...args: any[]) {
 }
 
 const clientLogger = {
-  info: (...args: any[]) => log('info', ...args),
-  warn: (...args: any[]) => log('warn', ...args),
-  error: (...args: any[]) => log('error', ...args),
+  info: (...args: unknown[]) => log('info', ...args),
+  warn: (...args: unknown[]) => log('warn', ...args),
+  error: (...args: unknown[]) => log('error', ...args),
 };
 
 export default clientLogger; 
