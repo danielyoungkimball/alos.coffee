@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import clientLogger from '@/lib/clientLogger';
 import { useRouter } from "next/navigation";
