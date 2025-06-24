@@ -197,7 +197,7 @@ export default function Home() {
     }
   }
 
-  function handleAddToCart(item: any) {
+  function handleAddToCart(item: { id: number; name: string; price: number }) {
     addToCart(item);
     const btn = addBtnRefs.current[item.id];
     if (btn) {
@@ -232,7 +232,7 @@ export default function Home() {
                   <h3 className="text-xl font-bold mb-2 text-espresso">{group.name}</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {group.items.map(item => (
-                      <div key={item.id} className="menu-card flex flex-col items-center">
+            <div key={item.id} className="menu-card flex flex-col items-center">
                         <span className="font-bold text-lg mb-1 text-espresso">{item.name}</span>
                         {item.description && <span className="text-xs text-gray-600 mb-1 text-center">{item.description}</span>}
                         <span className="mb-2 font-semibold text-black">{item.price > 0 ? `$${item.price} MXN` : item.description}</span>
@@ -260,24 +260,24 @@ export default function Home() {
             <aside className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out translate-x-0">
               <div className="relative h-full flex flex-col p-6">
                 <button onClick={() => setCartDrawerOpen(false)} className="absolute top-4 right-4 text-2xl">✕</button>
-                <h3 className="text-xl font-bold mb-4">Tu Carrito</h3>
-                {cart.length === 0 ? (
-                  <p>El carrito está vacío.</p>
-                ) : (
+              <h3 className="text-xl font-bold mb-4">Tu Carrito</h3>
+              {cart.length === 0 ? (
+                <p>El carrito está vacío.</p>
+              ) : (
                   <ul className="mb-4 flex-1 overflow-y-auto text-black">
-                    {cart.map(item => (
+                  {cart.map(item => (
                       <li key={item.id} className="flex justify-between items-center mb-2 text-black">
-                        <span>{item.qty} x {item.name}</span>
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
-                          <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
-                          <button onClick={() => removeFromCart(item.id)} className="text-red-500">Eliminar</button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <form onSubmit={handleCheckout} className="flex flex-col gap-3">
+                      <span>{item.qty} x {item.name}</span>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
+                        <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
+                        <button onClick={() => removeFromCart(item.id)} className="text-red-500">Eliminar</button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                   <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400" placeholder="Tu nombre" />
                   <input value={apartment} onChange={handleAddressChange} required className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Apartamento / Cuarto" />
                   {addressError && <span className="text-red-500 text-xs mb-1">{addressError}</span>}
@@ -296,23 +296,17 @@ export default function Home() {
                     />
                   </div>
                   {phoneError && <span className="text-red-500 text-xs mb-1">{phoneError}</span>}
-                  <div className="flex gap-4 items-center">
-                    <label className="flex items-center gap-1">
-                      <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => { setPayment("stripe"); clientLogger.info('Payment method selected', 'stripe'); }} /> Pago en línea
-                    </label>
-                    <label className="flex items-center gap-1">
-                      <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
-                    </label>
-                  </div>
-                  <button type="submit" className="mt-2 px-4 py-2 bg-teal text-parchment rounded font-bold hover:bg-ashGray transition-colors w-full">Finalizar pedido</button>
-                </form>
-                {cart.length > 0 && (
-                  <button
-                    type="submit"
-                    className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full"
-                  >Checkout</button>
-                )}
-              </div>
+                <div className="flex gap-4 items-center">
+                  <label className="flex items-center gap-1">
+                    <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => { setPayment("stripe"); clientLogger.info('Payment method selected', 'stripe'); }} /> Pago en línea
+                  </label>
+                  <label className="flex items-center gap-1">
+                    <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
+                  </label>
+                </div>
+                <button type="submit" className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
+              </form>
+            </div>
             </aside>
           </>
         )}
