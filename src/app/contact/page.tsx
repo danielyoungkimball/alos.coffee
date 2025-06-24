@@ -18,8 +18,8 @@ export default function Contact() {
         <span><b>WhatsApp:</b> <a href="https://wa.me/526242653144" className="underline">+52 624 265 3144</a></span>
         {/* <span><b>Dirección:</b> Calle Ejemplo 123, Ciudad, Estado</span> */}
         <div className="flex gap-4 mt-2">
-          <Link href="https://facebook.com/aloscoffeebakery" className="underline">Facebook</Link>
-          <Link href="https://instagram.com/aloscoffeebakery" className="underline">Instagram</Link>
+          <Link href="https://www.facebook.com/profile.php?id=61577585497493" className="underline">Facebook</Link>
+          <Link href="https://instagram.com/alos.coffee" className="underline">Instagram</Link>
         </div>
       </div>
     </div>

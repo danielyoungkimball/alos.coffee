@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     typescript: true,
   });
   
-  const { cart, name, apartment }: { cart: CartItem[], name: string, apartment: string } = await req.json();
+  const { cart, name, apartment, phone }: { cart: CartItem[], name: string, apartment: string, phone: string } = await req.json();
 
   try {
     const line_items = cart.map((item: CartItem) => ({
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
         name,
         apartment,
         order: JSON.stringify(cart.map((i: CartItem) => `${i.qty} x ${i.name}`)),
+        phone,
       },
     });
 

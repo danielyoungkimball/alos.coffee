@@ -4,6 +4,8 @@
 :root {
   --background: #F5EEE6;
   --foreground: #231F20;
+  --verde: #54683D;
+  --blanco: #E3DED9;
   --espresso: #4B2E19;
   --parchment: #FFFDF9;
   --cambridgeBlue: #69A297;
@@ -21,6 +23,10 @@ body {
 }
 
 .text-espresso { color: var(--espresso); }
+.text-verde { color: var(--verde); }
+.text-blanco { color: var(--blanco); }
+.bg-verde { background: var(--verde); }
+.bg-blanco { background: var(--blanco); }
 .bg-espresso { background: var(--espresso); }
 .bg-parchment { background: var(--parchment); }
 .text-parchment { color: var(--parchment); }
@@ -43,6 +49,7 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   transition: box-shadow 0.2s, transform 0.2s;
 }
+
 .menu-card:hover {
   box-shadow: 0 8px 32px 0 rgba(75,46,25,0.22);
   transform: translateY(-2px) scale(1.03);
@@ -51,6 +58,7 @@ h1, h2, h3, h4, h5, h6 {
 a {
   transition: color 0.2s;
 }
+
 a:hover {
   color: var(--accent);
 }
@@ -74,4 +82,12 @@ nav, footer {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+.animate-slide-in-right {
+  animation: slide-in-right 0.3s cubic-bezier(0.4,0,0.2,1) both;
 } 

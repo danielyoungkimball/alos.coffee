@@ -18,6 +18,7 @@ const clientLogger = {
   info: (...args: unknown[]) => log('info', ...args),
   warn: (...args: unknown[]) => log('warn', ...args),
   error: (...args: unknown[]) => log('error', ...args),
+  event: (event: string, details?: unknown) => log('info', `[EVENT] ${event}`, details),
 };
 
 export default clientLogger; 

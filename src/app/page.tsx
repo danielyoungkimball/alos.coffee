@@ -3,6 +3,7 @@ import { useState, useRef } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import clientLogger from '@/lib/clientLogger';
 import { useRouter } from "next/navigation";
+import Image from 'next/image';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -13,16 +14,16 @@ const MENU = [
       {
         name: "Frío o Caliente",
         items: [
-          { id: 1, name: "☕ Americano", price: 60 },
-          { id: 2, name: "☕ Cappuchino", price: 65 },
-          { id: 3, name: "☕ Moka", price: 90 },
-          { id: 4, name: "☕ Latte", price: 80 },
-          { id: 5, name: "🍮 Caramel Latte", price: 95 },
-          { id: 6, name: "🍦 Vainilla Latte", price: 95 },
-          { id: 7, name: "🌰 Avellana Latte", price: 95 },
-          { id: 8, name: "🍵 Matcha Latte", price: 100 },
-          { id: 9, name: "🍵 Chai Latte", price: 90 },
-          { id: 10, name: "🍫 Chocolate", price: 80 },
+          { id: 1, name: "☕ Americano", price: 60, image: "/menu-items/americano.png" },
+          { id: 2, name: "☕ Cappuchino", price: 65, image: "/menu-items/cappuchino.png" },
+          { id: 3, name: "☕ Moka", price: 90, image: "/menu-items/moka.png" },
+          { id: 4, name: "☕ Latte", price: 80, image: "/menu-items/latte.png" },
+          { id: 5, name: "🍮 Caramel Latte", price: 95, image: "/menu-items/caramel-latte.png" },
+          { id: 6, name: "🍦 Vainilla Latte", price: 95, image: "/menu-items/vainilla-latte.png" },
+          { id: 7, name: "🌰 Avellana Latte", price: 95, image: "/menu-items/avellana-latte.png" },
+          { id: 8, name: "🍵 Matcha Latte", price: 100, image: "/menu-items/matcha-latte.png" },
+          { id: 9, name: "🍵 Chai Latte", price: 90, image: "/menu-items/chai-latte.png" },
+          { id: 10, name: "🍫 Chocolate", price: 80, image: "/menu-items/chocolate.png" },
         ],
       },
       {
@@ -59,6 +60,14 @@ type CartItem = {
   name: string;
   price: number;
   qty: number;
+};
+
+type MenuItem = {
+  id: number;
+  name: string;
+  price: number;
+  image?: string;
+  description?: string;
 };
 
 export default function Home() {
@@ -178,7 +187,7 @@ export default function Home() {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cart, name, apartment }),
+        body: JSON.stringify({ cart, name, apartment, phone }),
       });
 
       const { sessionId } = await response.json();
@@ -212,31 +221,38 @@ export default function Home() {
     <div className="bg-parchment min-h-screen text-black font-nunito">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
-        <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-espresso">Menú</h2>
+        <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-verde">Menú</h2>
         <div className="space-y-10 w-full max-w-3xl">
           {MENU.map((section) => (
             <div key={section.category}>
-              <h2 className="text-2xl md:text-3xl font-sansita font-bold mb-4 text-espresso">{section.category}</h2>
+              <h2 className="text-2xl md:text-3xl font-sansita font-bold mb-4 text-verde">{section.category}</h2>
               {section.groups.map((group) => (
                 <div key={group.name} className="mb-6">
-                  <h3 className="text-xl font-bold mb-2 text-espresso">{group.name}</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                    {group.items.map(item => (
-            <div key={item.id} className="menu-card flex flex-col items-center">
-                        <span className="font-bold text-lg mb-1 text-espresso">{item.name}</span>
-                        {item.description && <span className="text-xs text-gray-600 mb-1 text-center">{item.description}</span>}
-                        <span className="mb-2 font-semibold text-black">{item.price > 0 ? `$${item.price} MXN` : item.description}</span>
-                        <button
-                          ref={el => { addBtnRefs.current[item.id] = el; }}
-                          onClick={() => handleAddToCart(item)}
-                          className={`px-3 py-1 rounded font-bold focus:outline-none focus:ring-2 focus:ring-espresso transition-all duration-300
-                            ${addedItemId === item.id ? 'bg-green-600 text-white scale-105' : 'bg-teal text-black hover:bg-accent'}`}
-                        >
-                          {addedItemId === item.id ? '¡Agregado!' : 'Agregar'}
-                          {addedItemId === item.id && <span className="ml-2">✔️</span>}
-                        </button>
-                      </div>
-                    ))}
+                  <h3 className="text-xl font-bold mb-2 text-verde">{group.name}</h3>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
+                    {group.items.map(item => {
+                      const menuItem = item as MenuItem;
+                      return (
+                        <div key={menuItem.id} className="bg-white rounded-xl shadow-lg flex flex-col items-center p-2 relative aspect-square group hover:shadow-2xl transition-all">
+                          {menuItem.image && (
+                            <div className="w-full h-32 md:h-40 flex items-center justify-center overflow-hidden rounded-lg">
+                              <Image src={menuItem.image} alt={menuItem.name} width={200} height={200} className="object-cover w-full h-full" />
+                            </div>
+                          )}
+                          <div className="flex-1 flex flex-col justify-between w-full items-center mt-2">
+                            <span className="font-bold text-lg text-verde text-center">{menuItem.name.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]+/, '')}</span>
+                            <span className="font-semibold text-black text-center">${menuItem.price} MXN</span>
+                          </div>
+                          <button
+                            onClick={() => handleAddToCart(menuItem)}
+                            className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-2xl shadow-lg border-2 border-white transition-all"
+                            aria-label={`Agregar ${menuItem.name}`}
+                          >
+                            +
+                          </button>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ))}

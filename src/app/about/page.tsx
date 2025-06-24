@@ -12,8 +12,6 @@ export default function About() {
         <h2 className="text-2xl font-bold mb-2 text-espresso">Nuestro Equipo</h2>
         <ul className="list-disc pl-6 text-black">
           <li><b>Alondra</b> – Fundadora y barista principal, apasionada por el café y la hospitalidad.</li>
-          <li><b>Daniel</b> – Chef de repostería y encargado de innovación en el menú.</li>
-          <li><b>Familia y amigos</b> – Apoyo constante y parte esencial de nuestra historia.</li>
         </ul>
       </div>
     </div>
