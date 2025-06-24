@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="font-nunito">
         <nav className="flex items-center justify-between px-6 py-4 bg-espresso text-parchment shadow">
           <div className="flex items-center gap-3">
-            <Image src="/Logo.png" alt="Alo! Coffee & Bakery Logo" width={48} height={48} className="rounded-full" />
+            <Image src="/Alo! Logo 1024x1024.png" alt="Alo! Coffee & Bakery Logo" width={48} height={48} className="rounded-full" />
             <span className="text-xl font-bold tracking-wide">Alo! Coffee & Bakery</span>
           </div>
           <div className="flex gap-6 text-base font-semibold">

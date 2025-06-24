@@ -3,7 +3,7 @@ import Stripe from 'stripe';
 import logger from '@/lib/logger';
 
 async function sendWhatsAppMessage(to: string, message: string) {
-  const url = `https://graph.facebook.com/v19.0/${process.env.WHATSAPP_ID}/messages`;
+  const url = `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION}/${process.env.WHATSAPP_TEST_PHONE_NUMBER_ID}/messages`;
   const payload = {
     messaging_product: 'whatsapp',
     to,
@@ -14,7 +14,7 @@ async function sendWhatsAppMessage(to: string, message: string) {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${process.env.META_ACCESS_TOKEN}`,
+      'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(payload),
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
     const orderList = JSON.parse(order).join(', ');
     const message = `🛎️ ¡Nuevo pedido pagado!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}\n\n🧺 Pedido: ${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: Pagado en línea\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
     try {
-      await sendWhatsAppMessage(process.env.ALONDRA_PHONE_NUMBER!, message);
+      await sendWhatsAppMessage(process.env.ALONDRA_WORK_PHONE_NUMBER!, message);
       logger.info('Stripe order WhatsApp notification sent');
     } catch (error) {
       logger.error({ error }, 'Failed to send WhatsApp message for Stripe order');

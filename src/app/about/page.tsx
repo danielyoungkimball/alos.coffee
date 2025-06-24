@@ -3,7 +3,7 @@ import Image from 'next/image';
 export default function About() {
   return (
     <div className="bg-parchment min-h-screen flex flex-col items-center justify-center text-center p-4">
-      <Image src="/Logo.png" alt="Alo! Coffee & Bakery Logo" width={180} height={180} className="mx-auto mb-6 rounded-full shadow-lg" />
+      <Image src="/Alo! Logo 1024x1024.png" alt="Alo! Coffee & Bakery Logo" width={180} height={180} className="mx-auto mb-6 rounded-full shadow-lg" />
       <h1 className="text-4xl font-bold mb-4 text-espresso">Sobre Nosotros</h1>
       <p className="max-w-2xl text-lg mb-6 text-richBlack">
         Alo! Coffee & Bakery nació de una pasión por el café de calidad y la repostería artesanal. Somos un equipo familiar dedicado a crear experiencias cálidas y deliciosas para nuestra comunidad. Nuestra misión es ofrecer bebidas y alimentos frescos, preparados con amor y los mejores ingredientes, en un ambiente acogedor y moderno.
