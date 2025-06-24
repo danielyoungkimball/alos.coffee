@@ -2,6 +2,7 @@
 import { useState, useRef } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import clientLogger from '@/lib/clientLogger';
+import { useRouter } from "next/navigation";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -71,6 +72,8 @@ export default function Home() {
   const [phoneError, setPhoneError] = useState("");
   const [addressError, setAddressError] = useState("");
   const addBtnRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
+  const [addedItemId, setAddedItemId] = useState<number | null>(null);
+  const router = useRouter();
 
   function addToCart(item: { id: number; name: string; price: number }) {
     clientLogger.info('Add to cart', item);
@@ -160,9 +163,9 @@ export default function Home() {
         });
         if (!response.ok) throw new Error('No se pudo enviar el pedido.');
         clientLogger.info('Cash order sent successfully');
-        alert('¡Pedido enviado! Alondra ha sido notificada por WhatsApp.');
         setCart([]);
         setCartDrawerOpen(false);
+        router.push('/success');
       } catch (error) {
         clientLogger.error('Error sending cash order', error);
         alert('Hubo un error al enviar el pedido. Intenta de nuevo.');
@@ -199,27 +202,14 @@ export default function Home() {
 
   function handleAddToCart(item: { id: number; name: string; price: number }) {
     addToCart(item);
-    const btn = addBtnRefs.current[item.id];
-    if (btn) {
-      btn.classList.remove("animate-bounce");
-      void btn.offsetWidth;
-      btn.classList.add("animate-bounce");
-    }
+    setAddedItemId(item.id);
+    setTimeout(() => {
+      setAddedItemId((prev) => (prev === item.id ? null : prev));
+    }, 900);
   }
 
   return (
-    <div className="bg-parchment min-h-screen text-richBlack font-nunito">
-      {/* Navbar */}
-      <nav className="flex justify-between items-center p-4 md:p-6 bg-richBlack text-parchment font-sansita">
-        <h1 className="text-2xl md:text-3xl font-bold">Alo! Coffee and Bakery</h1>
-        <button onClick={() => setCartDrawerOpen((v) => { clientLogger.info('Toggle cart', !v); return !v; })} className="relative bg-white rounded-full shadow-md p-3 hover:scale-105 transition-transform focus:outline-none">
-          🛒
-          {cart.length > 0 && (
-            <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full px-2 text-xs font-bold border-2 border-white shadow">{cart.reduce((a, b) => a + b.qty, 0)}</span>
-          )}
-        </button>
-      </nav>
-    
+    <div className="bg-parchment min-h-screen text-black font-nunito">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
         <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-espresso">Menú</h2>
@@ -238,14 +228,13 @@ export default function Home() {
                         <span className="mb-2 font-semibold text-black">{item.price > 0 ? `$${item.price} MXN` : item.description}</span>
                         <button
                           ref={el => { addBtnRefs.current[item.id] = el; }}
-                          onClick={e => {
-                            handleAddToCart(item);
-                            e.currentTarget.classList.remove('animate-bounce');
-                            void e.currentTarget.offsetWidth;
-                            e.currentTarget.classList.add('animate-bounce');
-                          }}
-                          className="px-3 py-1 bg-teal text-black rounded hover:bg-accent transition-colors focus:outline-none focus:ring-2 focus:ring-espresso"
-                        >Agregar</button>
+                          onClick={() => handleAddToCart(item)}
+                          className={`px-3 py-1 rounded font-bold focus:outline-none focus:ring-2 focus:ring-espresso transition-all duration-300
+                            ${addedItemId === item.id ? 'bg-green-600 text-white scale-105' : 'bg-teal text-black hover:bg-accent'}`}
+                        >
+                          {addedItemId === item.id ? '¡Agregado!' : 'Agregar'}
+                          {addedItemId === item.id && <span className="ml-2">✔️</span>}
+                        </button>
                       </div>
                     ))}
                   </div>
@@ -254,10 +243,18 @@ export default function Home() {
             </div>
           ))}
         </div>
+        {cart.length > 0 && !cartDrawerOpen && (
+          <button
+            onClick={() => setCartDrawerOpen(true)}
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-md bg-green-600 text-white rounded-full font-bold text-lg py-4 shadow-lg md:hidden"
+          >
+            Ver Carrito ({cart.reduce((a, b) => a + b.qty, 0)})
+          </button>
+        )}
         {cartDrawerOpen && (
           <>
             <div className="fixed inset-0 bg-black bg-opacity-40 z-40" onClick={() => setCartDrawerOpen(false)} />
-            <aside className="fixed top-0 right-0 h-full w-full max-w-md bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out translate-x-0">
+            <aside className="fixed md:top-0 md:right-0 md:h-full md:w-full md:max-w-md bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 bottom-0 left-0 w-full h-[80vh] rounded-t-2xl md:rounded-none md:bottom-auto md:left-auto md:rounded-none " style={{ transform: cartDrawerOpen ? 'translateY(0)' : 'translateY(100%)' }}>
               <div className="relative h-full flex flex-col p-6">
                 <button onClick={() => setCartDrawerOpen(false)} className="absolute top-4 right-4 text-2xl">✕</button>
               <h3 className="text-xl font-bold mb-4">Tu Carrito</h3>

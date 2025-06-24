@@ -9,15 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        sansita: ['var(--font-sansita)'],
-        nunito: ['var(--font-nunito-sans)'],
+        sansita: ["var(--font-sansita)"],
+        nunito: ["var(--font-nunito-sans)"],
       },
       colors: {
-        parchment: '#FDF9F0',
-        richBlack: '#0D0D0D',
-        cambridgeBlue: '#69A297',
-        teal: '#3E838C',
-        ashGray: '#CAD4CB',
+        verde: "#54683D",
+        blanco: "#E3DED9",
+        parchment: "#FDF9F0",
+        cambridgeBlue: "#69A297",
+        teal: "#3E838C",
+        ashGray: "#CAD4CB",
       },
     },
   },
