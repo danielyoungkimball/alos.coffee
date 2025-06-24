@@ -3,8 +3,6 @@
 import { Nunito_Sans, Sansita } from 'next/font/google';
 import "./globals.css";
 import Link from 'next/link';
-import Image from 'next/image';
-import { useState } from 'react';
 import NavBar from './NavBar';
 
 const nunito_sans = Nunito_Sans({

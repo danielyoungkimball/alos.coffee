@@ -80,8 +80,6 @@ export default function Home() {
   const [country, setCountry] = useState("MX");
   const [phoneError, setPhoneError] = useState("");
   const [addressError, setAddressError] = useState("");
-  const addBtnRefs = useRef<{ [key: number]: HTMLButtonElement | null }>({});
-  const [addedItemId, setAddedItemId] = useState<number | null>(null);
   const router = useRouter();
 
   function addToCart(item: { id: number; name: string; price: number }) {
@@ -211,9 +209,8 @@ export default function Home() {
 
   function handleAddToCart(item: { id: number; name: string; price: number }) {
     addToCart(item);
-    setAddedItemId(item.id);
     setTimeout(() => {
-      setAddedItemId((prev) => (prev === item.id ? null : prev));
+      setCart((prev) => (prev.find(i => i.id === item.id) ? prev : [...prev, { ...item, qty: 1 }]));
     }, 900);
   }
 
