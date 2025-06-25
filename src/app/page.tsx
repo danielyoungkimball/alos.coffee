@@ -7,12 +7,14 @@ import Image from 'next/image';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+const VERIFIED_WHATSAPP = process.env.VERIFIED_WHATSAPP === 'true';
+
 const MENU = [
   {
     category: "Bebidas 16 oz",
     groups: [
       {
-        name: "Frío o Caliente",
+        name: "Café",
         items: [
           { id: 1, name: "☕ Americano", price: 60, image: "/menu-items/americano.png" },
           { id: 2, name: "☕ Cappuchino", price: 65, image: "/menu-items/cappuchino.png" },
@@ -29,9 +31,9 @@ const MENU = [
       {
         name: "Jugos",
         items: [
-          { id: 11, name: "🍊 Naranja", price: 60 },
-          { id: 12, name: "🥤 Verde", price: 80, description: "(Jugo de naranja, nopal, espinaca, apio, piña)" },
-          { id: 13, name: "🥕 Zanahoria", price: 60 },
+          { id: 11, name: "🍊 Naranja", price: 60, image: "/menu-items/naranja.png" },
+          { id: 12, name: "🥤 Verde", price: 80, description: "(Jugo de naranja, nopal, espinaca, apio, piña)", image: "/menu-items/verde.png" },
+          { id: 13, name: "🥕 Zanahoria", price: 60, image: "/menu-items/zanahoria.png" },
         ],
       },
     ],
@@ -42,17 +44,46 @@ const MENU = [
       {
         name: "Repostería",
         items: [
-          { id: 14, name: "🍰 Postre de la semana", price: 0, description: "(Preguntar por disponibilidad)" },
-          { id: 15, name: "🥞 Crepas de avena", price: 75, description: "Nutella, cajeta, lechera, mermelada de fresa o zarzamora, queso crema, fresa, plátano, durazno, nuez, almendra" },
-          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Con miel y mantequilla" },
-          { id: 17, name: "🥪 Mini Sandwich de manzana", price: 65, description: "Con lechera y granola" },
-          { id: 18, name: "🍞 Pan francés", price: 130, description: "Con frutos rojos y crema batida" },
-          { id: 19, name: "🍓 Fresas con crema", price: 85, description: "Con lechera y topping (chispas de chocolate, ajonjolí caramelizado, nuez, almendra, coco rallado)" },
-          { id: 20, name: "🧇 Marquesitas", price: 60, description: "Con queso de bola" },
+          { id: 14, name: "🍰 Postre de la semana", price: 0, description: "(Preguntar por disponibilidad)", image: "/menu-items/postre-semana.png" },
+          { id: 15, name: "🥞 Crepas de avena", price: 75, description: "Nutella, cajeta, lechera, mermelada de fresa o zarzamora, queso crema, fresa, plátano, durazno, nuez, almendra", image: "/menu-items/crepas-avena.png" },
+          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Con miel y mantequilla", image: "/menu-items/hot-cakes-avena.png", },
+          { id: 17, name: "🥪 Mini Sandwich de manzana", price: 65, description: "Con lechera y granola", image: "/menu-items/mini-sandwich-manzana.png" },
+          { id: 18, name: "🍞 Pan francés", price: 130, description: "Con frutos rojos y crema batida", image: "/menu-items/pan-frances.png" },
+          { id: 19, name: "🍓 Fresas con crema", price: 85, description: "Con lechera y topping (chispas de chocolate, ajonjolí caramelizado, nuez, almendra, coco rallado)", image: "/menu-items/fresas-crema.png" },
+          { id: 20, name: "🧇 Marquesitas", price: 60, description: "Con queso de bola", image: "/menu-items/marquesitas.png" },
         ],
       },
     ],
   },
+];
+
+// Default add-ons/toppings
+const DRINK_ADDONS = [
+  { label: "Canela (cinnamon)", value: "canela" },
+  { label: "Extra shot de espresso", value: "extra_espresso" },
+  { label: "Crema batida (whipped cream)", value: "crema_batida" },
+  { label: "Leche deslactosada", value: "leche_deslactosada" },
+  { label: "Leche de almendra", value: "leche_almendra" },
+  { label: "Leche de coco", value: "leche_coco" },
+  { label: "Leche de soya", value: "leche_soya" },
+];
+const CREPE_TOPPINGS = [
+  { label: "Nutella", value: "nutella" },
+  { label: "Cajeta", value: "cajeta" },
+  { label: "Lechera", value: "lechera" },
+  { label: "Mermelada de fresa", value: "mermelada_fresa" },
+  { label: "Mermelada de zarzamora", value: "mermelada_zarzamora" },
+  { label: "Queso crema", value: "queso_crema" },
+  { label: "Fresa", value: "fresa" },
+  { label: "Plátano", value: "platano" },
+  { label: "Durazno", value: "durazno" },
+  { label: "Nuez", value: "nuez" },
+  { label: "Almendra", value: "almendra" },
+];
+const OTHER_ADDONS = [
+  { label: "Granola", value: "granola" },
+  { label: "Frutas", value: "frutas" },
+  { label: "Miel", value: "miel" },
 ];
 
 type CartItem = {
@@ -60,6 +91,12 @@ type CartItem = {
   name: string;
   price: number;
   qty: number;
+  options?: {
+    hotCold?: string;
+    size?: string;
+    addons?: string[];
+    notes?: string;
+  };
 };
 
 type MenuItem = {
@@ -80,14 +117,18 @@ export default function Home() {
   const [country, setCountry] = useState("MX");
   const [phoneError, setPhoneError] = useState("");
   const [addressError, setAddressError] = useState("");
+  const [showWhatsAppMsg, setShowWhatsAppMsg] = useState(false);
+  const [waMsg, setWaMsg] = useState("");
   const router = useRouter();
+  const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
+  const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '16oz', addons: [] as string[], notes: '' });
 
-  function addToCart(item: { id: number; name: string; price: number }) {
+  function addToCart(item: { id: number; name: string; price: number; options?: any }) {
     clientLogger.info('Add to cart', item);
     setCart((prev) => {
-      const found = prev.find((i) => i.id === item.id);
+      const found = prev.find((i) => i.id === item.id && JSON.stringify(i.options) === JSON.stringify(item.options));
       if (found) {
-        return prev.map((i) => i.id === item.id ? { ...i, qty: i.qty + 1 } : i);
+        return prev.map((i) => (i.id === item.id && JSON.stringify(i.options) === JSON.stringify(item.options)) ? { ...i, qty: i.qty + 1 } : i);
       } else {
         return [...prev, { ...item, qty: 1 }];
       }
@@ -161,6 +202,28 @@ export default function Home() {
       return;
     }
 
+    if (!VERIFIED_WHATSAPP) {
+      // Only allow cash, format WhatsApp message
+      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const orderList = cart.map((item) => {
+        let details = '';
+        if (item.options) {
+          if (item.options.hotCold) details += ` (${item.options.hotCold})`;
+          if (item.options.size) details += ` [${item.options.size}]`;
+          if (item.options.addons && item.options.addons.length > 0) details += `\n  + ${item.options.addons.map(a => a.replace(/_/g, ' ')).join(', ')}`;
+          if (item.options.notes) details += `\n  Nota: ${item.options.notes}`;
+        }
+        return `${item.qty}x ${item.name}${details} - $${item.price * item.qty} MXN`;
+      }).join('\n');
+      const phoneLine = phone ? `\n📱 Teléfono del cliente: ${phone}\n💬 WhatsApp: https://wa.me/${formattedPhone}` : '';
+      const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: Pago pendiente en efectivo 💵\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
+      setWaMsg(message);
+      setShowWhatsAppMsg(true);
+      setCart([]);
+      setCartDrawerOpen(false);
+      return;
+    }
+
     if (payment === 'cash') {
       try {
         const response = await fetch('/api/cash-order', {
@@ -207,11 +270,31 @@ export default function Home() {
     }
   }
 
-  function handleAddToCart(item: { id: number; name: string; price: number }) {
-    addToCart(item);
-    setTimeout(() => {
-      setCart((prev) => (prev.find(i => i.id === item.id) ? prev : [...prev, { ...item, qty: 1 }]));
-    }, 900);
+  function openCustomizeModal(item: MenuItem) {
+    // Default hot/cold for drinks, toppings for crepes, etc.
+    let hotCold = '';
+    if (item.name.toLowerCase().includes('latte') || item.name.toLowerCase().includes('americano') || item.name.toLowerCase().includes('cappuchino') || item.name.toLowerCase().includes('moka') || item.name.toLowerCase().includes('chai') || item.name.toLowerCase().includes('matcha') || item.name.toLowerCase().includes('chocolate')) {
+      hotCold = 'caliente';
+    }
+    setCustomOptions({ hotCold, size: '16oz', addons: [], notes: '' });
+    setCustomizingItem(item);
+  }
+
+  function handleAddonToggle(value: string, limit?: number) {
+    setCustomOptions((opts) => {
+      let newAddons = opts.addons.includes(value)
+        ? opts.addons.filter((a) => a !== value)
+        : [...opts.addons, value];
+      if (limit && newAddons.length > limit) newAddons = newAddons.slice(1);
+      return { ...opts, addons: newAddons };
+    });
+  }
+
+  function finalizeAddToCart() {
+    if (customizingItem) {
+      addToCart({ ...customizingItem, options: { ...customOptions } });
+      setCustomizingItem(null);
+    }
   }
 
   return (
@@ -241,7 +324,7 @@ export default function Home() {
                             <span className="font-semibold text-black text-center">${menuItem.price} MXN</span>
                           </div>
                           <button
-                            onClick={() => handleAddToCart(menuItem)}
+                            onClick={() => openCustomizeModal(menuItem)}
                             className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-2xl shadow-lg border-2 border-white transition-all"
                             aria-label={`Agregar ${menuItem.name}`}
                           >
@@ -259,7 +342,8 @@ export default function Home() {
         {cart.length > 0 && !cartDrawerOpen && (
           <button
             onClick={() => setCartDrawerOpen(true)}
-            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-md bg-green-600 text-white rounded-full font-bold text-lg py-4 shadow-lg md:hidden"
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-[90vw] max-w-md bg-green-600 text-white rounded-full font-bold text-lg py-4 shadow-lg md:left-auto md:right-8 md:translate-x-0 md:w-auto md:px-8 md:py-4 md:rounded-full md:bottom-8"
+            style={{ minWidth: '180px' }}
           >
             Ver Carrito ({cart.reduce((a, b) => a + b.qty, 0)})
           </button>
@@ -270,24 +354,35 @@ export default function Home() {
             <aside className="fixed md:top-0 md:right-0 md:h-full md:w-full md:max-w-md bg-white shadow-lg z-50 transform transition-transform duration-300 ease-in-out md:translate-x-0 bottom-0 left-0 w-full h-[80vh] rounded-t-2xl md:rounded-none md:bottom-auto md:left-auto md:rounded-none " style={{ transform: cartDrawerOpen ? 'translateY(0)' : 'translateY(100%)' }}>
               <div className="relative h-full flex flex-col p-6">
                 <button onClick={() => setCartDrawerOpen(false)} className="absolute top-4 right-4 text-2xl">✕</button>
-              <h3 className="text-xl font-bold mb-4">Tu Carrito</h3>
-              {cart.length === 0 ? (
-                <p>El carrito está vacío.</p>
-              ) : (
+                <h3 className="text-xl font-bold mb-4">Tu Carrito</h3>
+                {cart.length === 0 ? (
+                  <p>El carrito está vacío.</p>
+                ) : (
                   <ul className="mb-4 flex-1 overflow-y-auto text-black">
-                  {cart.map(item => (
-                      <li key={item.id} className="flex justify-between items-center mb-2 text-black">
-                      <span>{item.qty} x {item.name}</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
-                        <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
-                        <button onClick={() => removeFromCart(item.id)} className="text-red-500">Eliminar</button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <form onSubmit={handleCheckout} className="flex flex-col gap-3">
+                    {cart.map(item => (
+                      <li key={item.id + JSON.stringify(item.options)} className="flex flex-col mb-2 text-black border-b pb-2">
+                        <div className="flex justify-between items-center w-full">
+                          <span>{item.qty} x {item.name}</span>
+                          <div className="flex items-center gap-2">
+                            <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
+                            <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
+                            <button onClick={() => removeFromCart(item.id)} className="text-red-500">Eliminar</button>
+                          </div>
+                        </div>
+                        {/* Show options/addons/notes */}
+                        {item.options && (
+                          <div className="text-xs text-gray-700 mt-1 pl-2">
+                            {item.options.hotCold && <div>• {item.options.hotCold === 'frio' ? 'Frío' : 'Caliente'}</div>}
+                            {item.options.size && <div>• Tamaño: {item.options.size}</div>}
+                            {item.options.addons && item.options.addons.length > 0 && <div>• Add-ons: {item.options.addons.map(a => a.replace(/_/g, ' ')).join(', ')}</div>}
+                            {item.options.notes && <div>• Nota: {item.options.notes}</div>}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                   <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400" placeholder="Tu nombre" />
                   <input value={apartment} onChange={handleAddressChange} required className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Apartamento / Cuarto" />
                   {addressError && <span className="text-red-500 text-xs mb-1">{addressError}</span>}
@@ -306,21 +401,103 @@ export default function Home() {
                     />
                   </div>
                   {phoneError && <span className="text-red-500 text-xs mb-1">{phoneError}</span>}
-                <div className="flex gap-4 items-center">
-                  <label className="flex items-center gap-1">
-                    <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => { setPayment("stripe"); clientLogger.info('Payment method selected', 'stripe'); }} /> Pago en línea
-                  </label>
-                  <label className="flex items-center gap-1">
-                    <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
-                  </label>
-                </div>
-                <button type="submit" className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
-              </form>
-            </div>
+                  <div className="flex gap-4 items-center">
+                    {/* Only show Stripe if VERIFIED_WHATTSAPP is true */}
+                    {VERIFIED_WHATSAPP && (
+                      <label className="flex items-center gap-1">
+                        <input type="radio" name="payment" value="stripe" checked={payment === "stripe"} onChange={() => { setPayment("stripe"); clientLogger.info('Payment method selected', 'stripe'); }} /> Pago en línea
+                      </label>
+                    )}
+                    <label className="flex items-center gap-1">
+                      <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
+                    </label>
+                  </div>
+                  <button type="submit" className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
+                </form>
+              </div>
             </aside>
           </>
         )}
       </section>
+      {/* WhatsApp message modal */}
+      {showWhatsAppMsg && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full flex flex-col items-center">
+            <h2 className="text-xl font-bold mb-2 text-verde">¡Casi listo!</h2>
+            <p className="mb-4 text-center">Copia este mensaje y envíalo por WhatsApp al <a href="https://wa.me/526242653144" target="_blank" rel="noopener noreferrer" className="underline text-verde">+52 624 265 3144</a> para completar tu pedido:</p>
+            <textarea className="w-full p-2 border rounded mb-2 text-xs" rows={6} value={waMsg} readOnly />
+            <div className="flex gap-2 w-full">
+              <button className="flex-1 bg-green-600 text-white rounded px-4 py-2 font-bold" onClick={() => { navigator.clipboard.writeText(waMsg); }}>Copiar</button>
+              <a className="flex-1 bg-verde text-white rounded px-4 py-2 font-bold text-center" href={`https://wa.me/526242653144?text=${encodeURIComponent(waMsg)}`} target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>
+            </div>
+            <button className="mt-4 text-sm underline text-gray-500" onClick={() => setShowWhatsAppMsg(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
+      {/* Customization Modal */}
+      {customizingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full flex flex-col items-center">
+            <h2 className="text-xl font-bold mb-2 text-verde">Personaliza tu pedido</h2>
+            <p className="mb-2 text-center font-semibold">{customizingItem.name}</p>
+            {/* Hot/Cold for drinks */}
+            {customizingItem.name.match(/americano|latte|cappuchino|moka|chai|matcha|chocolate/i) && (
+              <div className="mb-2 w-full">
+                <label className="block font-semibold mb-1">¿Frío o Caliente?</label>
+                <div className="flex gap-2">
+                  <button type="button" className={`flex-1 rounded px-2 py-1 border ${customOptions.hotCold === 'caliente' ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => setCustomOptions(o => ({ ...o, hotCold: 'caliente' }))}>Caliente</button>
+                  <button type="button" className={`flex-1 rounded px-2 py-1 border ${customOptions.hotCold === 'frio' ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => setCustomOptions(o => ({ ...o, hotCold: 'frio' }))}>Frío</button>
+                </div>
+              </div>
+            )}
+            {/* Size (only 16oz for now) */}
+            <div className="mb-2 w-full">
+              <label className="block font-semibold mb-1">Tamaño</label>
+              <select className="w-full p-2 border rounded bg-gray-100" value={customOptions.size} disabled>
+                <option value="16oz">16 oz</option>
+              </select>
+            </div>
+            {/* Add-ons/toppings */}
+            {customizingItem.name.match(/crepa|crepas/i) ? (
+              <div className="mb-2 w-full">
+                <label className="block font-semibold mb-1">Toppings (elige hasta 2)</label>
+                <div className="flex flex-wrap gap-2">
+                  {CREPE_TOPPINGS.map(opt => (
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value, 2)}>{opt.label}</button>
+                  ))}
+                </div>
+              </div>
+            ) : customizingItem.name.match(/americano|latte|cappuchino|moka|chai|matcha|chocolate/i) ? (
+              <div className="mb-2 w-full">
+                <label className="block font-semibold mb-1">Add-ons</label>
+                <div className="flex flex-wrap gap-2">
+                  {DRINK_ADDONS.map(opt => (
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>{opt.label}</button>
+                  ))}
+                </div>
+              </div>
+            ) : customizingItem.name.match(/hot cake|sandwich|pan francés|fresas|marquesita/i) ? (
+              <div className="mb-2 w-full">
+                <label className="block font-semibold mb-1">Add-ons</label>
+                <div className="flex flex-wrap gap-2">
+                  {OTHER_ADDONS.map(opt => (
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>{opt.label}</button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {/* Notes */}
+            <div className="mb-2 w-full">
+              <label className="block font-semibold mb-1">Notas especiales</label>
+              <textarea className="w-full p-2 border rounded" rows={2} value={customOptions.notes} onChange={e => setCustomOptions(o => ({ ...o, notes: e.target.value }))} placeholder="¿Algo más?" />
+            </div>
+            <div className="flex gap-2 w-full mt-2">
+              <button className="flex-1 bg-green-600 text-white rounded px-4 py-2 font-bold" onClick={finalizeAddToCart}>Agregar al carrito</button>
+              <button className="flex-1 bg-gray-300 text-black rounded px-4 py-2 font-bold" onClick={() => setCustomizingItem(null)}>Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
