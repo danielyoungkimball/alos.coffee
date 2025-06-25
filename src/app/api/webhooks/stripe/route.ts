@@ -2,6 +2,31 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import logger from '@/lib/logger';
 
+type CartItem = { 
+  id: number; 
+  name: string; 
+  price: number; 
+  qty: number;
+  totalPrice?: number;
+  addonPrices?: { [key: string]: number };
+  options?: {
+    hotCold?: string;
+    size?: string;
+    addons?: string[];
+    notes?: string;
+  };
+};
+
+// Helper function to get addon details with prices
+function getAddonDetails(addons: string[], addonPrices: { [key: string]: number } = {}): string {
+  if (!addons || addons.length === 0) return '';
+  return addons.map(addon => {
+    const price = addonPrices[addon] || 0;
+    const label = addon.replace(/_/g, ' ');
+    return `${label}${price > 0 ? ` (+$${price})` : ''}`;
+  }).join(', ');
+}
+
 async function sendWhatsAppMessage(to: string, message: string) {
   const url = `https://graph.facebook.com/${process.env.WHATSAPP_API_VERSION}/${process.env.WHATSAPP_TEST_PHONE_NUMBER_ID}/messages`;
   const payload = {

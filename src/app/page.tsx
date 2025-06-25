@@ -57,33 +57,33 @@ const MENU = [
   },
 ];
 
-// Default add-ons/toppings
+// Default add-ons/toppings with prices
 const DRINK_ADDONS = [
-  { label: "Canela (cinnamon)", value: "canela" },
-  { label: "Extra shot de espresso", value: "extra_espresso" },
-  { label: "Crema batida (whipped cream)", value: "crema_batida" },
-  { label: "Leche deslactosada", value: "leche_deslactosada" },
-  { label: "Leche de almendra", value: "leche_almendra" },
-  { label: "Leche de coco", value: "leche_coco" },
-  { label: "Leche de soya", value: "leche_soya" },
+  { label: "Canela (cinnamon)", value: "canela", price: 0 },
+  { label: "Extra shot de espresso", value: "extra_espresso", price: 15 },
+  { label: "Crema batida (whipped cream)", value: "crema_batida", price: 10 },
+  { label: "Leche deslactosada", value: "leche_deslactosada", price: 5 },
+  { label: "Leche de almendra", value: "leche_almendra", price: 10 },
+  { label: "Leche de avena", value: "leche_avena", price: 10 },
+  { label: "Leche de soya", value: "leche_soya", price: 10 },
 ];
 const CREPE_TOPPINGS = [
-  { label: "Nutella", value: "nutella" },
-  { label: "Cajeta", value: "cajeta" },
-  { label: "Lechera", value: "lechera" },
-  { label: "Mermelada de fresa", value: "mermelada_fresa" },
-  { label: "Mermelada de zarzamora", value: "mermelada_zarzamora" },
-  { label: "Queso crema", value: "queso_crema" },
-  { label: "Fresa", value: "fresa" },
-  { label: "Plátano", value: "platano" },
-  { label: "Durazno", value: "durazno" },
-  { label: "Nuez", value: "nuez" },
-  { label: "Almendra", value: "almendra" },
+  { label: "Nutella", value: "nutella", price: 15 },
+  { label: "Cajeta", value: "cajeta", price: 10 },
+  { label: "Lechera", value: "lechera", price: 5 },
+  { label: "Mermelada de fresa", value: "mermelada_fresa", price: 8 },
+  { label: "Mermelada de zarzamora", value: "mermelada_zarzamora", price: 8 },
+  { label: "Queso crema", value: "queso_crema", price: 12 },
+  { label: "Fresa", value: "fresa", price: 8 },
+  { label: "Plátano", value: "platano", price: 5 },
+  { label: "Durazno", value: "durazno", price: 8 },
+  { label: "Nuez", value: "nuez", price: 10 },
+  { label: "Almendra", value: "almendra", price: 12 },
 ];
 const OTHER_ADDONS = [
-  { label: "Granola", value: "granola" },
-  { label: "Frutas", value: "frutas" },
-  { label: "Miel", value: "miel" },
+  { label: "Granola", value: "granola", price: 8 },
+  { label: "Frutas", value: "frutas", price: 10 },
+  { label: "Miel", value: "miel", price: 5 },
 ];
 
 type CartItem = {
@@ -97,6 +97,8 @@ type CartItem = {
     addons?: string[];
     notes?: string;
   };
+  addonPrices?: { [key: string]: number };
+  totalPrice?: number;
 };
 
 type MenuItem = {
@@ -106,6 +108,31 @@ type MenuItem = {
   image?: string;
   description?: string;
 };
+
+// Helper function to get addon price
+function getAddonPrice(value: string): number {
+  const allAddons = [...DRINK_ADDONS, ...CREPE_TOPPINGS, ...OTHER_ADDONS];
+  const addon = allAddons.find(a => a.value === value);
+  return addon?.price || 0;
+}
+
+// Helper function to calculate total price with addons
+function calculateTotalPrice(basePrice: number, addons: string[]): number {
+  const addonTotal = addons.reduce((sum, addon) => sum + getAddonPrice(addon), 0);
+  return basePrice + addonTotal;
+}
+
+// Helper function to get addon details with prices
+function getAddonDetails(addons: string[]): { label: string; price: number }[] {
+  const allAddons = [...DRINK_ADDONS, ...CREPE_TOPPINGS, ...OTHER_ADDONS];
+  return addons.map(value => {
+    const addon = allAddons.find(a => a.value === value);
+    return {
+      label: addon?.label || value.replace(/_/g, ' '),
+      price: addon?.price || 0
+    };
+  });
+}
 
 export default function Home() {
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -119,18 +146,35 @@ export default function Home() {
   const [addressError, setAddressError] = useState("");
   const [showWhatsAppMsg, setShowWhatsAppMsg] = useState(false);
   const [waMsg, setWaMsg] = useState("");
+  const [bankInfo, setBankInfo] = useState("");
   const router = useRouter();
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '16oz', addons: [] as string[], notes: '' });
 
   function addToCart(item: { id: number; name: string; price: number; options?: { hotCold?: string; size?: string; addons?: string[]; notes?: string } }) {
     clientLogger.info('Add to cart', item);
+
+    // Calculate addon prices and total
+    const addons = item.options?.addons || [];
+    const addonPrices: { [key: string]: number } = {};
+    addons.forEach(addon => {
+      addonPrices[addon] = getAddonPrice(addon);
+    });
+    const totalPrice = calculateTotalPrice(item.price, addons);
+
+    const cartItem: CartItem = {
+      ...item,
+      qty: 1,
+      addonPrices,
+      totalPrice
+    };
+
     setCart((prev) => {
       const found = prev.find((i) => i.id === item.id && JSON.stringify(i.options) === JSON.stringify(item.options));
       if (found) {
         return prev.map((i) => (i.id === item.id && JSON.stringify(i.options) === JSON.stringify(item.options)) ? { ...i, qty: i.qty + 1 } : i);
       } else {
-        return [...prev, { ...item, qty: 1 }];
+        return [...prev, cartItem];
       }
     });
   }
@@ -204,19 +248,36 @@ export default function Home() {
 
     if (!VERIFIED_WHATSAPP) {
       // Only allow cash, format WhatsApp message
-      const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+      const total = cart.reduce((sum, item) => sum + (item.totalPrice || item.price) * item.qty, 0);
       const orderList = cart.map((item) => {
         let details = '';
         if (item.options) {
           if (item.options.hotCold) details += ` (${item.options.hotCold})`;
           if (item.options.size) details += ` [${item.options.size}]`;
-          if (item.options.addons && item.options.addons.length > 0) details += `\n  + ${item.options.addons.map(a => a.replace(/_/g, ' ')).join(', ')}`;
+          if (item.options.addons && item.options.addons.length > 0) {
+            const addonDetails = getAddonDetails(item.options.addons);
+            details += `\n  + ${addonDetails.map(addon =>
+              `${addon.label}${addon.price > 0 ? ` (+$${addon.price})` : ''}`
+            ).join(', ')}`;
+          }
           if (item.options.notes) details += `\n  Nota: ${item.options.notes}`;
         }
-        return `${item.qty}x ${item.name}${details} - $${item.price * item.qty} MXN`;
+        return `${item.qty}x ${item.name}${details} - $${(item.totalPrice || item.price) * item.qty} MXN`;
       }).join('\n');
       const phoneLine = phone ? `\n📱 Teléfono del cliente: ${phone}\n💬 WhatsApp: https://wa.me/${formattedPhone}` : '';
-      const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: Pago pendiente en efectivo 💵\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
+
+      // Determine payment method text
+      let paymentText = '';
+      if (payment === 'cash') {
+        paymentText = 'Pago pendiente en efectivo 💵';
+      } else if (payment === 'transferencia') {
+        paymentText = 'Pago pendiente por transferencia 💳';
+        if (bankInfo) {
+          paymentText += `\n🏦 Información bancaria: ${bankInfo}`;
+        }
+      }
+
+      const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: ${paymentText}\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
       setWaMsg(message);
       setShowWhatsAppMsg(true);
       setCart([]);
@@ -229,7 +290,7 @@ export default function Home() {
         const response = await fetch('/api/cash-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cart, name, apartment, phone }),
+          body: JSON.stringify({ cart, name, apartment, phone, payment, bankInfo }),
         });
         if (!response.ok) throw new Error('No se pudo enviar el pedido.');
         clientLogger.info('Cash order sent successfully');
@@ -238,6 +299,25 @@ export default function Home() {
         router.push('/success');
       } catch (error) {
         clientLogger.error('Error sending cash order', error);
+        alert('Hubo un error al enviar el pedido. Intenta de nuevo.');
+      }
+      return;
+    }
+
+    if (payment === 'transferencia') {
+      try {
+        const response = await fetch('/api/cash-order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart, name, apartment, phone, payment, bankInfo }),
+        });
+        if (!response.ok) throw new Error('No se pudo enviar el pedido.');
+        clientLogger.info('Transfer order sent successfully');
+        setCart([]);
+        setCartDrawerOpen(false);
+        router.push('/success');
+      } catch (error) {
+        clientLogger.error('Error sending transfer order', error);
         alert('Hubo un error al enviar el pedido. Intenta de nuevo.');
       }
       return;
@@ -298,10 +378,17 @@ export default function Home() {
   }
 
   return (
-    <div className="bg-parchment min-h-screen text-black font-nunito">
-      {/* Hero Section */}
+    <div className="bg-parchment min-h-screen text-black font-nunito relative z-10 overflow-hidden">
+      {/* Alo! Banner background - responsive for web and mobile */}      
+      {/* <div className="absolute top-0 left-0 w-full h-40 md:h-[30vw] lg:h-[22vw] z-0 pointer-events-none flex justify-center">
+        <img
+          src="/alo-banner.png"
+          alt="Alo! Banner"
+          className="w-full h-full object-cover opacity-10"
+        />
+      </div> */}
+      {/* Hero/Menu Section */}
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
-        <div className="mb-2 text-base md:text-lg font-semibold text-verde">Horario: Lunes a Viernes de 6:00 am - 10 am y 6:00 pm - 10:00 pm<br/>Sábados de 8:00 am - 12:00 pm y 6:00 pm - 10:00 pm</div>
         <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-verde">Menú</h2>
         <div className="space-y-10 w-full max-w-3xl">
           {MENU.map((section) => (
@@ -359,29 +446,53 @@ export default function Home() {
                 {cart.length === 0 ? (
                   <p>El carrito está vacío.</p>
                 ) : (
-                  <ul className="mb-4 flex-1 overflow-y-auto text-black">
-                    {cart.map(item => (
-                      <li key={item.id + JSON.stringify(item.options)} className="flex flex-col mb-2 text-black border-b pb-2">
-                        <div className="flex justify-between items-center w-full">
-                          <span>{item.qty} x {item.name}</span>
-                          <div className="flex items-center gap-2">
+                  <>
+                    <ul className="mb-4 flex-1 overflow-y-auto text-black">
+                      {cart.map(item => (
+                        <li key={item.id + JSON.stringify(item.options)} className="flex flex-col gap-1 mb-4 pb-4 border-b border-gray-200">
+                          <div className="flex justify-between items-center">
+                            <span className="font-bold text-lg flex items-center gap-2">
+                              {item.qty} x {item.name}
+                            </span>
+                            <span className="font-bold text-verde text-lg">${item.totalPrice || item.price} MXN</span>
+                          </div>
+                          <div className="flex flex-col ml-2 mt-1 gap-1">
+                            <span className="text-xs text-gray-500">Base: ${item.price} {item.totalPrice && item.totalPrice > item.price && (<>&nbsp;Add-ons: ${item.totalPrice - item.price}</>)}</span>
+                            {item.options?.hotCold && <span className="text-sm">• {item.options.hotCold === 'frio' ? 'Frío' : 'Caliente'}</span>}
+                            {item.options?.size && <span className="text-sm">• Tamaño: {item.options.size}</span>}
+                            {item.options?.addons && item.options.addons.length > 0 && (
+                              <div className="text-sm flex flex-col gap-0.5 mt-1">
+                                <span className="font-semibold">• Add-ons:</span>
+                                <ul className="ml-4 list-disc">
+                                  {getAddonDetails(item.options.addons ?? []).map((addon, idx) => {
+                                    const price = item.addonPrices?.[item.options?.addons?.[idx] ?? ''] || 0;
+                                    return (
+                                      <li key={addon.label} className="flex justify-between text-xs">
+                                        <span>{addon.label}</span>
+                                        {price > 0 && <span className="text-gray-500 ml-2">+${price}</span>}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
+                            )}
+                            {item.options?.notes && <span className="text-xs text-gray-700">• Nota: {item.options.notes}</span>}
+                          </div>
+                          <div className="flex items-center gap-2 mt-2">
                             <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
                             <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
-                            <button onClick={() => removeFromCart(item.id)} className="text-red-500">Eliminar</button>
+                            <button onClick={() => removeFromCart(item.id)} className="text-red-500 font-semibold">Eliminar</button>
                           </div>
-                        </div>
-                        {/* Show options/addons/notes */}
-                        {item.options && (
-                          <div className="text-xs text-gray-700 mt-1 pl-2">
-                            {item.options.hotCold && <div>• {item.options.hotCold === 'frio' ? 'Frío' : 'Caliente'}</div>}
-                            {item.options.size && <div>• Tamaño: {item.options.size}</div>}
-                            {item.options.addons && item.options.addons.length > 0 && <div>• Add-ons: {item.options.addons.map(a => a.replace(/_/g, ' ')).join(', ')}</div>}
-                            {item.options.notes && <div>• Nota: {item.options.notes}</div>}
-                          </div>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="border-t pt-3 mb-3">
+                      <div className="flex justify-between items-center text-lg font-bold">
+                        <span>Total:</span>
+                        <span className="text-verde">${cart.reduce((sum, item) => sum + (item.totalPrice || item.price) * item.qty, 0)} MXN</span>
+                      </div>
+                    </div>
+                  </>
                 )}
                 <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                   <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400" placeholder="Tu nombre" />
@@ -411,8 +522,22 @@ export default function Home() {
                     )}
                     <label className="flex items-center gap-1">
                       <input type="radio" name="payment" value="cash" checked={payment === "cash"} onChange={() => { setPayment("cash"); clientLogger.info('Payment method selected', 'cash'); }} /> Efectivo
+                      <input type="radio" name="payment" value="transferencia" checked={payment === "transferencia"} onChange={() => { setPayment("transferencia"); clientLogger.info('Payment method selected', 'transferencia'); }} /> Transferencia
                     </label>
                   </div>
+                  {payment === "transferencia" && (
+                    <div className="mb-2">
+                      <input
+                        value={bankInfo}
+                        onChange={e => setBankInfo(e.target.value)}
+                        className="w-full p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400"
+                        placeholder="Información bancaria (opcional)"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Puedes incluir tu información bancaria o dejar en blanco para usar la información de Alo! Coffee
+                      </p>
+                    </div>
+                  )}
                   <button type="submit" className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
                 </form>
               </div>
@@ -464,7 +589,9 @@ export default function Home() {
                 <label className="block font-semibold mb-1">Toppings (elige hasta 2)</label>
                 <div className="flex flex-wrap gap-2">
                   {CREPE_TOPPINGS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value, 2)}>{opt.label}</button>
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value, 2)}>
+                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -473,7 +600,9 @@ export default function Home() {
                 <label className="block font-semibold mb-1">Add-ons</label>
                 <div className="flex flex-wrap gap-2">
                   {DRINK_ADDONS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>{opt.label}</button>
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>
+                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
+                    </button>
                   ))}
                 </div>
               </div>
@@ -482,11 +611,24 @@ export default function Home() {
                 <label className="block font-semibold mb-1">Add-ons</label>
                 <div className="flex flex-wrap gap-2">
                   {OTHER_ADDONS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>{opt.label}</button>
+                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>
+                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
+                    </button>
                   ))}
                 </div>
               </div>
             ) : null}
+            {/* Price display */}
+            <div className="mb-2 w-full text-center">
+              <div className="text-lg font-bold text-verde">
+                ${calculateTotalPrice(customizingItem.price, customOptions.addons)} MXN
+              </div>
+              {customOptions.addons.length > 0 && (
+                <div className="text-xs text-gray-500">
+                  Base: ${customizingItem.price} + Add-ons: ${calculateTotalPrice(customizingItem.price, customOptions.addons) - customizingItem.price}
+                </div>
+              )}
+            </div>
             {/* Notes */}
             <div className="mb-2 w-full">
               <label className="block font-semibold mb-1">Notas especiales</label>

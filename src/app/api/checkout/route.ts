@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
-interface CartItem {
-  id: number;
-  name: string;
-  price: number;
+type CartItem = { 
+  id: number; 
+  name: string; 
+  price: number; 
   qty: number;
-}
+  totalPrice?: number;
+  addonPrices?: { [key: string]: number };
+  options?: {
+    hotCold?: string;
+    size?: string;
+    addons?: string[];
+    notes?: string;
+  };
+};
 
 export async function POST(req: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -22,7 +30,7 @@ export async function POST(req: NextRequest) {
         product_data: {
           name: item.name,
         },
-        unit_amount: item.price * 100, // Price in cents
+        unit_amount: (item.totalPrice || item.price) * 100, // Price in cents
       },
       quantity: item.qty,
     }));

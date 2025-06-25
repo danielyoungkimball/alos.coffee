@@ -3,6 +3,7 @@ import Link from 'next/link';
 export default function Contact() {
   return (
     <div className="bg-parchment min-h-screen flex flex-col items-center justify-center text-center p-4">
+      <div className="mb-2 text-base md:text-lg font-semibold text-verde">Horario: Lunes a Viernes de 6:00 am - 10 am y 6:00 pm - 10:00 pm<br />Sábados de 8:00 am - 12:00 pm y 6:00 pm - 10:00 pm</div>
       <h1 className="text-4xl font-bold mb-4 text-espresso">Contáctanos</h1>
       <p className="max-w-xl text-lg mb-6 text-black">¿Tienes preguntas, sugerencias o quieres hacer un pedido especial? ¡Estamos aquí para ti!</p>
       <div className="bg-white bg-opacity-80 rounded-lg shadow p-6 max-w-md w-full mx-auto mb-6">
