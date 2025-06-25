@@ -123,7 +123,7 @@ export default function Home() {
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '16oz', addons: [] as string[], notes: '' });
 
-  function addToCart(item: { id: number; name: string; price: number; options?: any }) {
+  function addToCart(item: { id: number; name: string; price: number; options?: { hotCold?: string; size?: string; addons?: string[]; notes?: string } }) {
     clientLogger.info('Add to cart', item);
     setCart((prev) => {
       const found = prev.find((i) => i.id === item.id && JSON.stringify(i.options) === JSON.stringify(item.options));
@@ -301,6 +301,7 @@ export default function Home() {
     <div className="bg-parchment min-h-screen text-black font-nunito">
       {/* Hero Section */}
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
+        <div className="mb-2 text-base md:text-lg font-semibold text-verde">Horario: Lunes a Viernes de 6:00 am - 10 am y 6:00 pm - 10:00 pm<br/>Sábados de 8:00 am - 12:00 pm y 6:00 pm - 10:00 pm</div>
         <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-verde">Menú</h2>
         <div className="space-y-10 w-full max-w-3xl">
           {MENU.map((section) => (
