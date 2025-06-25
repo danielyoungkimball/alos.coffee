@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import logger from '@/lib/logger';
 
-type CartItem = { 
-  id: number; 
-  name: string; 
-  price: number; 
-  qty: number;
-  totalPrice?: number;
-  addonPrices?: { [key: string]: number };
-  options?: {
-    hotCold?: string;
-    size?: string;
-    addons?: string[];
-    notes?: string;
-  };
-};
+// type CartItem = { 
+//   id: number; 
+//   name: string; 
+//   price: number; 
+//   qty: number;
+//   totalPrice?: number;
+//   addonPrices?: { [key: string]: number };
+//   options?: {
+//     hotCold?: string;
+//     size?: string;
+//     addons?: string[];
+//     notes?: string;
+//   };
+// };
 
 // Helper function to get addon details with prices
 function getAddonDetails(addons: string[], addonPrices: { [key: string]: number } = {}): string {
