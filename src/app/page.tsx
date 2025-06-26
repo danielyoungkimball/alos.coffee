@@ -651,6 +651,8 @@ export default function Home() {
                 src={customizingItem.image}
                 alt={customizingItem.name}
                 className="w-full max-w-xs h-32 object-cover rounded-xl mb-2 mx-auto"
+                width={100}
+                height={100}
               />
             )}
             {/* Hot/Cold for drinks */}
