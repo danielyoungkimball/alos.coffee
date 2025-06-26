@@ -699,6 +699,8 @@ export default function Home() {
                         {isSpecialToppingItem ? (selectedCount >= 2 && ALL_ADDONS[String(key)].price > 0 && !customOptions.addons.includes(String(key)) ? ` (+$${ALL_ADDONS[String(key)].price})` : '') : ('')}
                         {/* Special topping item with 1 free topping */}
                         {isSpecialToppingItemOnlyOne ? (selectedCount >= 1 && ALL_ADDONS[String(key)].price > 0 && !customOptions.addons.includes(String(key)) ? ` (+$${ALL_ADDONS[String(key)].price})` : '') : ('')}
+                        {/* Regular topping item */}
+                        {!isSpecialToppingItem && !isSpecialToppingItemOnlyOne && ALL_ADDONS[String(key)].price > 0 && !customOptions.addons.includes(String(key)) ? ` (+$${ALL_ADDONS[String(key)].price})` : ''}
                       </button>
                     );
                   })}
