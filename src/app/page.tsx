@@ -683,8 +683,8 @@ export default function Home() {
               <textarea className="w-full p-2 border rounded" rows={2} value={customOptions.notes} onChange={e => setCustomOptions(o => ({ ...o, notes: e.target.value }))} placeholder="¿Algo más?" />
             </div>
             <div className="flex gap-2 w-full mt-2">
-              <button className="flex-1 bg-green-600 text-white rounded px-4 py-2 font-bold" onClick={finalizeAddToCart}>Agregar al carrito</button>
-              <button className="flex-1 bg-gray-300 text-black rounded px-4 py-2 font-bold" onClick={() => setCustomizingItem(null)}>Cancelar</button>
+              <button className="flex-1 bg-green-600 text-white rounded px-4 py-2 font-bold" onClick={finalizeAddToCart}>Agregar al carrito - ${calculateTotalPrice(customizingItem.price, customOptions.addons, customizingItem.name)} MXN</button>
+              <button className="w-10 h-10 bg-gray-300 text-black rounded font-bold flex items-center justify-center" onClick={() => setCustomizingItem(null)}>✕</button>
             </div>
           </div>
         </div>
