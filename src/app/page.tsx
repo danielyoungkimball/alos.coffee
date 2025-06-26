@@ -153,7 +153,6 @@ export default function Home() {
   const [addressError, setAddressError] = useState("");
   const [showWhatsAppMsg, setShowWhatsAppMsg] = useState(false);
   const [waMsg, setWaMsg] = useState("");
-  const [bankInfo, setBankInfo] = useState("");
   const router = useRouter();
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '', addons: [] as string[], notes: '' });
@@ -253,20 +252,36 @@ export default function Home() {
     let formattedPhone = phone.replace(/\D/g, "");
     if (country === "MX" && !formattedPhone.startsWith("52")) formattedPhone = "52" + formattedPhone;
     if (country === "US" && !formattedPhone.startsWith("1")) formattedPhone = "1" + formattedPhone;
-    if (!validatePhone(formattedPhone)) {
-      setPhoneError("Por favor ingresa un número válido (10 dígitos) para " + (country === "MX" ? "México" : "EE.UU."));
-      valid = false;
+
+    // Only validate phone and address if payment is not transfer
+    if (payment !== 'transferencia') {
+      if (!validatePhone(formattedPhone)) {
+        setPhoneError("Por favor ingresa un número válido (10 dígitos) para " + (country === "MX" ? "México" : "EE.UU."));
+        valid = false;
+      }
+      if (!validateAddress(apartment)) {
+        setAddressError("Por favor ingresa una dirección válida (mínimo 5 caracteres)");
+        valid = false;
+      }
     }
-    if (!validateAddress(apartment)) {
-      setAddressError("Por favor ingresa una dirección válida (mínimo 5 caracteres)");
-      valid = false;
-    }
+
     if (!valid) return;
     clientLogger.info('Checkout submitted', { name, apartment, cart, payment, phone });
-    if (!name || !apartment || cart.length === 0) {
-      clientLogger.warn('Checkout validation failed', { name, apartment, cart });
-      alert("Por favor llena tu nombre, dirección y agrega productos al carrito.");
-      return;
+
+    // For transfer, only require name and cart
+    if (payment === 'transferencia') {
+      if (!name || cart.length === 0) {
+        clientLogger.warn('Transfer checkout validation failed', { name, cart });
+        alert("Por favor llena tu nombre y agrega productos al carrito.");
+        return;
+      }
+    } else {
+      // For other payment methods, require all fields
+      if (!name || !apartment || cart.length === 0) {
+        clientLogger.warn('Checkout validation failed', { name, apartment, cart });
+        alert("Por favor llena tu nombre, dirección y agrega productos al carrito.");
+        return;
+      }
     }
 
     if (!VERIFIED_WHATSAPP) {
@@ -287,20 +302,19 @@ export default function Home() {
         }
         return `${item.qty}x ${item.name}${details} - $${(item.totalPrice || item.price) * item.qty} MXN`;
       }).join('\n');
+
       const phoneLine = phone ? `\n📱 Teléfono del cliente: ${phone}\n💬 WhatsApp: https://wa.me/${formattedPhone}` : '';
+      const addressLine = apartment ? `\n🏠 Dirección: ${apartment}` : '';
 
       // Determine payment method text
       let paymentText = '';
       if (payment === 'cash') {
         paymentText = 'Pago pendiente en efectivo 💵';
       } else if (payment === 'transferencia') {
-        paymentText = 'Pago pendiente por transferencia 💳';
-        if (bankInfo) {
-          paymentText += `\n🏦 Información bancaria: ${bankInfo}`;
-        }
+        paymentText = 'Pago pendiente por transferencia 💳\n🏦 Información bancaria:\nBBVA\n4152314138047454\nAlondra Higareda';
       }
 
-      const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}\n🏠 Dirección: ${apartment}${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: ${paymentText}\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
+      const message = `🛎️ ¡Nuevo pedido recibido!\n\n📍 Nombre: ${name}${addressLine}${phoneLine}\n🧺 Pedido:\n${orderList}\n\n💰 Total: $${total} MXN\n💳 Pago: ${paymentText}\n\n¡Gracias por elegir Alo! Coffee & Bakery ☕🥐`;
       setWaMsg(message);
       setShowWhatsAppMsg(true);
       setCart([]);
@@ -313,7 +327,7 @@ export default function Home() {
         const response = await fetch('/api/cash-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cart, name, apartment, phone, payment, bankInfo }),
+          body: JSON.stringify({ cart, name, apartment, phone, payment }),
         });
         if (!response.ok) throw new Error('No se pudo enviar el pedido.');
         clientLogger.info('Cash order sent successfully');
@@ -332,7 +346,7 @@ export default function Home() {
         const response = await fetch('/api/cash-order', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cart, name, apartment, phone, payment, bankInfo }),
+          body: JSON.stringify({ cart, name, apartment, phone, payment }),
         });
         if (!response.ok) throw new Error('No se pudo enviar el pedido.');
         clientLogger.info('Transfer order sent successfully');
@@ -534,7 +548,7 @@ export default function Home() {
                 )}
                 <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                   <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400" placeholder="Tu nombre" />
-                  <input value={apartment} onChange={handleAddressChange} required className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Dirección / Departamento / Casa" />
+                  <input value={apartment} onChange={handleAddressChange} required={payment !== 'transferencia'} className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Dirección / Departamento / Casa" />
                   {addressError && <span className="text-red-500 text-xs mb-1">{addressError}</span>}
                   <div className="flex gap-2 items-center">
                     <select value={country} onChange={e => setCountry(e.target.value)} className="p-2 rounded border border-gray-300 bg-white text-black">
@@ -544,7 +558,7 @@ export default function Home() {
                     <input
                       value={phone}
                       onChange={handlePhoneChange}
-                      required
+                      required={payment !== 'transferencia'}
                       className={`flex-1 p-2 rounded border ${phoneError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`}
                       placeholder={country === 'MX' ? '10 dígitos (México)' : '10 digits (US)'}
                       maxLength={15}
@@ -564,15 +578,15 @@ export default function Home() {
                     </label>
                   </div>
                   {payment === "transferencia" && (
-                    <div className="mb-2">
-                      <input
-                        value={bankInfo}
-                        onChange={e => setBankInfo(e.target.value)}
-                        className="w-full p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400"
-                        placeholder="Información bancaria (opcional)"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        Puedes incluir tu información bancaria o dejar en blanco para usar la información de Alo! Coffee
+                    <div className="mb-2 p-3 bg-gray-50 rounded border">
+                      <p className="text-sm font-semibold mb-2">Información bancaria para transferencia:</p>
+                      <div className="text-sm space-y-1">
+                        <p><strong>Banco:</strong> BBVA</p>
+                        <p><strong>Número de cuenta:</strong> 4152314138047454</p>
+                        <p><strong>Titular:</strong> Alondra Higareda</p>
+                      </div>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Realiza la transferencia y envía el comprobante por WhatsApp
                       </p>
                     </div>
                   )}
