@@ -48,7 +48,7 @@ const MENU = [
         items: [
           { id: 14, name: "🍰 Postre de la semana", price: 0, description: "(Preguntar por disponibilidad)" }, // image: "/menu-items/postre-semana.png"
           { id: 15, name: "🥞 Crepas de avena", price: 75, description: "Dos toppings a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/crepas-avena.png",
-          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Dos toppings a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/hot-cakes-avena.png"
+          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Con miel y mantequilla", possibleAddons: ['frutas'] }, //image: "/menu-items/hot-cakes-avena.png"
           { id: 17, name: "🧇 Marquesitas", price: 60, description: "Con Queso de Bola y\nuno topping a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/marquesitas.png", 
           { id: 18, name: "🥪 Mini Sandwich de manzana", price: 65, description: "Con lechera y granola" }, //image: "/menu-items/mini-sandwich-manzana.png"
           { id: 19, name: "🍞 Pan francés", price: 130, description: "Con frutos rojos y crema batida" }, //image: "/menu-items/pan-frances.png"
@@ -92,8 +92,8 @@ function getAddonPrice(value: string): number {
 
 // Helper function to calculate total price with addons
 function calculateTotalPrice(basePrice: number, addons: string[], itemName?: string): number {
-  // Special pricing for crepes and hot cakes: first 2 toppings free
-  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+  // Special pricing for crepes: first 2 toppings free
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('fresas con crema'))) {
     if (addons.length <= 2) {
       return basePrice; // First 2 toppings are free
     } else {
@@ -120,8 +120,8 @@ function calculateTotalPrice(basePrice: number, addons: string[], itemName?: str
 
 // Helper function to get addon details with prices (updated for special pricing)
 function getAddonDetails(addons: string[], itemName?: string): { label: string; price: number }[] {
-  // Special pricing for crepes, hot cakes, fresas con crema: first 2 toppings free
-  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+  // Special pricing for crepes, fresas con crema: first 2 toppings free
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('fresas con crema'))) {
     return addons.map((value, index) => {
       const addon = ALL_ADDONS[String(value)];
       const price = index < 2 ? 0 : (addon?.price || 0); // First 2 are free
@@ -165,8 +165,8 @@ export default function Home() {
     const addons = item.options?.addons || [];
     const addonPrices: { [key: string]: number } = {};
 
-    // Special pricing for crepes and hot cakes
-    if (item.name.toLowerCase().includes('crepa') || item.name.toLowerCase().includes('hot cake') || item.name.toLowerCase().includes('fresas con crema')) {
+    // Special pricing for crepes 
+    if (item.name.toLowerCase().includes('crepa') || item.name.toLowerCase().includes('fresas con crema')) {
       addons.forEach((addon, index) => {
         // First 2 toppings are free, charge for additional ones
         addonPrices[addon] = index < 2 ? 0 : getAddonPrice(addon);
@@ -478,7 +478,7 @@ export default function Home() {
                   <>
                     <ul className="mb-4 flex-1 overflow-y-auto text-black">
                       {cart.map(item => {
-                        const isSpecialToppingItem = ["crepa", "hot cake", "fresas con crema", "marquesita"].some(keyword => item.name.toLowerCase().includes(keyword));
+                        const isSpecialToppingItem = ["crepa", "fresas con crema", "marquesita"].some(keyword => item.name.toLowerCase().includes(keyword));
                         return (
                           <li key={item.id + JSON.stringify(item.options)} className="flex flex-col gap-1 mb-4 pb-4 border-b border-gray-200">
                             <div className="flex justify-between items-center">
@@ -639,7 +639,7 @@ export default function Home() {
                 <label className="block font-semibold mb-1">Add-ons</label>
                 <div className="flex flex-wrap gap-2">
                   {customizingItem.possibleAddons.map(key => {
-                    const isSpecialToppingItem = ["crepa", "hot cake", "fresas con crema"].some(keyword =>
+                    const isSpecialToppingItem = ["crepa", "fresas con crema"].some(keyword =>
                       customizingItem.name.toLowerCase().includes(keyword)
                     );
                     const isSpecialToppingItemOnlyOne = ["marquesita"].some(keyword =>

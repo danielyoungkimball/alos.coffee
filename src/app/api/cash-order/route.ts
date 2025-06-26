@@ -45,8 +45,8 @@ async function sendWhatsAppMessage(to: string, message: string) {
 function getAddonDetails(addons: string[], addonPrices: { [key: string]: number } = {}, itemName?: string): string {
   if (!addons || addons.length === 0) return '';
   
-  // Special pricing for crepes and hot cakes
-  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+  // Special pricing for crepes
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('fresas con crema'))) {
     return addons.map((addon, index) => {
       const price = index < 2 ? 0 : (addonPrices[addon] || 0); // First 2 are free
       const label = addon.replace(/_/g, ' ');
