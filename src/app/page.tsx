@@ -265,7 +265,7 @@ export default function Home() {
     clientLogger.info('Checkout submitted', { name, apartment, cart, payment, phone });
     if (!name || !apartment || cart.length === 0) {
       clientLogger.warn('Checkout validation failed', { name, apartment, cart });
-      alert("Por favor llena tu nombre, apartamento y agrega productos al carrito.");
+      alert("Por favor llena tu nombre, dirección y agrega productos al carrito.");
       return;
     }
 
@@ -534,7 +534,7 @@ export default function Home() {
                 )}
                 <form onSubmit={handleCheckout} className="flex flex-col gap-3">
                   <input value={name} onChange={e => setName(e.target.value)} required className="p-2 rounded border border-gray-300 text-black bg-white placeholder-gray-400" placeholder="Tu nombre" />
-                  <input value={apartment} onChange={handleAddressChange} required className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Apartamento / Cuarto" />
+                  <input value={apartment} onChange={handleAddressChange} required className={`p-2 rounded border ${addressError ? 'border-red-500' : 'border-gray-300'} text-black bg-white placeholder-gray-400`} placeholder="Dirección / Departamento / Casa" />
                   {addressError && <span className="text-red-500 text-xs mb-1">{addressError}</span>}
                   <div className="flex gap-2 items-center">
                     <select value={country} onChange={e => setCountry(e.target.value)} className="p-2 rounded border border-gray-300 bg-white text-black">
