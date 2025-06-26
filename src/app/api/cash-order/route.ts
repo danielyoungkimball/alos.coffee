@@ -42,8 +42,19 @@ async function sendWhatsAppMessage(to: string, message: string) {
 }
 
 // Helper function to get addon details with prices
-function getAddonDetails(addons: string[], addonPrices: { [key: string]: number } = {}): string {
+function getAddonDetails(addons: string[], addonPrices: { [key: string]: number } = {}, itemName?: string): string {
   if (!addons || addons.length === 0) return '';
+  
+  // Special pricing for crepes and hot cakes
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+    return addons.map((addon, index) => {
+      const price = index < 2 ? 0 : (addonPrices[addon] || 0); // First 2 are free
+      const label = addon.replace(/_/g, ' ');
+      return `${label}${price > 0 ? ` (+$${price})` : ''}`;
+    }).join(', ');
+  }
+  
+  // Regular pricing for other items
   return addons.map(addon => {
     const price = addonPrices[addon] || 0;
     const label = addon.replace(/_/g, ' ');
@@ -60,9 +71,9 @@ export async function POST(req: Request) {
     let details = '';
     if (item.options) {
       if (item.options.hotCold) details += ` (${item.options.hotCold})`;
-      if (item.options.size) details += ` [${item.options.size}]`;
+      if (item.options.size && item.options.size !== '') details += ` [${item.options.size}]`;
       if (item.options.addons && item.options.addons.length > 0) {
-        details += `\n  + ${getAddonDetails(item.options.addons, item.addonPrices)}`;
+        details += `\n  + ${getAddonDetails(item.options.addons, item.addonPrices, item.name)}`;
       }
       if (item.options.notes) details += `\n  Nota: ${item.options.notes}`;
     }

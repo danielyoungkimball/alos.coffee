@@ -9,6 +9,49 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 
 const VERIFIED_WHATSAPP = process.env.VERIFIED_WHATSAPP === 'true';
 
+// Define all possible add-ons in one place
+export const ALL_ADDONS: { [key: string]: { label: string; price: number } } = {
+  canela: { label: "Canela (cinnamon)", price: 0 },
+  extra_espresso: { label: "Extra shot de espresso", price: 10 },
+  crema_batida: { label: "Crema batida (whipped cream)", price: 10 },
+  leche_deslactosada: { label: "Leche deslactosada", price: 0 },
+  leche_almendra: { label: "Leche de almendra", price: 10 },
+  leche_avena: { label: "Leche de avena", price: 10 },
+  leche_soya: { label: "Leche de soya", price: 10 },
+  nutella: { label: "Nutella", price: 10 },
+  cajeta: { label: "Cajeta", price: 10 },
+  lechera: { label: "Lechera", price: 10 },
+  mermelada_fresa: { label: "Mermelada de fresa", price: 10 },
+  mermelada_zarzamora: { label: "Mermelada de zarzamora", price: 10 },
+  queso_crema: { label: "Queso crema", price: 10 },
+  fresa: { label: "Fresa", price: 10 },
+  platano: { label: "Plátano", price: 10 },
+  durazno: { label: "Durazno", price: 10 },
+  nuez: { label: "Nuez", price: 10 },
+  almendra: { label: "Almendra", price: 10 },
+  granola: { label: "Granola", price: 10 },
+  frutas: { label: "Frutas", price: 10 },
+  miel: { label: "Miel", price: 10 },
+  chispas_chocolate: { label: "Chispas de chocolate", price: 10 },
+  ajonjoli_caramelizado: { label: "Ajonjolí caramelizado", price: 10 },
+  coco_rallado: { label: "Coco rallado", price: 10 },
+};
+
+// Add a type for possibleAddons
+export type AddonKey = keyof typeof ALL_ADDONS;
+
+// Define reusable sets of add-on keys
+const DRINK_ADDON_KEYS = [
+  "canela", "extra_espresso", "crema_batida", "leche_deslactosada", "leche_almendra", "leche_avena", "leche_soya"
+];
+const CREPE_TOPPING_KEYS = [
+  "nutella", "cajeta", "lechera", "mermelada_fresa", "mermelada_zarzamora", "queso_crema", "fresa", "platano", "durazno", "nuez", "almendra"
+];
+const FRESAS_TOPPING_KEYS = [
+  "chispas_chocolate", "ajonjoli_caramelizado", "nuez", "almendra", "coco_rallado"
+];
+
+// Update MENU to use these keys
 const MENU = [
   {
     category: "Bebidas 16 oz",
@@ -16,16 +59,16 @@ const MENU = [
       {
         name: "Café",
         items: [
-          { id: 1, name: "☕ Americano", price: 60, image: "/menu-items/americano.png" },
-          { id: 2, name: "☕ Cappuchino", price: 65, image: "/menu-items/cappuchino.png" },
-          { id: 3, name: "☕ Moka", price: 90, image: "/menu-items/moka.png" },
-          { id: 4, name: "☕ Latte", price: 80, image: "/menu-items/latte.png" },
-          { id: 5, name: "🍮 Caramel Latte", price: 95, image: "/menu-items/caramel-latte.png" },
-          { id: 6, name: "🍦 Vainilla Latte", price: 95, image: "/menu-items/vainilla-latte.png" },
-          { id: 7, name: "🌰 Avellana Latte", price: 95, image: "/menu-items/avellana-latte.png" },
-          { id: 8, name: "🍵 Matcha Latte", price: 100, image: "/menu-items/matcha-latte.png" },
-          { id: 9, name: "🍵 Chai Latte", price: 90, image: "/menu-items/chai-latte.png" },
-          { id: 10, name: "🍫 Chocolate", price: 80, image: "/menu-items/chocolate.png" },
+          { id: 1, name: "☕ Americano", price: 60, image: "/menu-items/americano.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 2, name: "☕ Cappuchino", price: 65, image: "/menu-items/cappuchino.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 3, name: "☕ Moka", price: 90, image: "/menu-items/moka.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 4, name: "☕ Latte", price: 80, image: "/menu-items/latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 5, name: "🍮 Caramel Latte", price: 95, image: "/menu-items/caramel-latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 6, name: "🍦 Vainilla Latte", price: 95, image: "/menu-items/vainilla-latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 7, name: "🌰 Avellana Latte", price: 95, image: "/menu-items/avellana-latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 8, name: "🍵 Matcha Latte", price: 100, image: "/menu-items/matcha-latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 9, name: "🍵 Chai Latte", price: 90, image: "/menu-items/chai-latte.png", possibleAddons: DRINK_ADDON_KEYS },
+          { id: 10, name: "🍫 Chocolate", price: 80, image: "/menu-items/chocolate.png", possibleAddons: DRINK_ADDON_KEYS },
         ],
       },
       {
@@ -44,46 +87,18 @@ const MENU = [
       {
         name: "Repostería",
         items: [
-          { id: 14, name: "🍰 Postre de la semana", price: 0, description: "(Preguntar por disponibilidad)", image: "/menu-items/postre-semana.png" },
-          { id: 15, name: "🥞 Crepas de avena", price: 75, description: "Nutella, cajeta, lechera, mermelada de fresa o zarzamora, queso crema, fresa, plátano, durazno, nuez, almendra", image: "/menu-items/crepas-avena.png" },
-          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Con miel y mantequilla", image: "/menu-items/hot-cakes-avena.png", },
-          { id: 17, name: "🥪 Mini Sandwich de manzana", price: 65, description: "Con lechera y granola", image: "/menu-items/mini-sandwich-manzana.png" },
-          { id: 18, name: "🍞 Pan francés", price: 130, description: "Con frutos rojos y crema batida", image: "/menu-items/pan-frances.png" },
-          { id: 19, name: "🍓 Fresas con crema", price: 85, description: "Con lechera y topping (chispas de chocolate, ajonjolí caramelizado, nuez, almendra, coco rallado)", image: "/menu-items/fresas-crema.png" },
-          { id: 20, name: "🧇 Marquesitas", price: 60, description: "Con queso de bola", image: "/menu-items/marquesitas.png" },
+          { id: 14, name: "🍰 Postre de la semana", price: 0, description: "(Preguntar por disponibilidad)" }, // image: "/menu-items/postre-semana.png"
+          { id: 15, name: "🥞 Crepas de avena", price: 75, description: "Dos toppings a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/crepas-avena.png",
+          { id: 16, name: "🥞 Hot Cakes de avena", price: 65, description: "Dos toppings a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/hot-cakes-avena.png"
+          { id: 17, name: "🧇 Marquesitas", price: 60, description: "Con Queso de Bola y\nuno topping a elegir", possibleAddons: CREPE_TOPPING_KEYS }, //image: "/menu-items/marquesitas.png", 
+          { id: 18, name: "🥪 Mini Sandwich de manzana", price: 65, description: "Con lechera y granola" }, //image: "/menu-items/mini-sandwich-manzana.png"
+          { id: 19, name: "🍞 Pan francés", price: 130, description: "Con frutos rojos y crema batida" }, //image: "/menu-items/pan-frances.png"
+          { id: 20, name: "🍓 Fresas con crema", price: 85, description: "Con lechera y dos toppings", possibleAddons: FRESAS_TOPPING_KEYS }, //image: "/menu-items/fresas-crema.png",
+
         ],
       },
     ],
   },
-];
-
-// Default add-ons/toppings with prices
-const DRINK_ADDONS = [
-  { label: "Canela (cinnamon)", value: "canela", price: 0 },
-  { label: "Extra shot de espresso", value: "extra_espresso", price: 15 },
-  { label: "Crema batida (whipped cream)", value: "crema_batida", price: 10 },
-  { label: "Leche deslactosada", value: "leche_deslactosada", price: 5 },
-  { label: "Leche de almendra", value: "leche_almendra", price: 10 },
-  { label: "Leche de avena", value: "leche_avena", price: 10 },
-  { label: "Leche de soya", value: "leche_soya", price: 10 },
-];
-const CREPE_TOPPINGS = [
-  { label: "Nutella", value: "nutella", price: 15 },
-  { label: "Cajeta", value: "cajeta", price: 10 },
-  { label: "Lechera", value: "lechera", price: 5 },
-  { label: "Mermelada de fresa", value: "mermelada_fresa", price: 8 },
-  { label: "Mermelada de zarzamora", value: "mermelada_zarzamora", price: 8 },
-  { label: "Queso crema", value: "queso_crema", price: 12 },
-  { label: "Fresa", value: "fresa", price: 8 },
-  { label: "Plátano", value: "platano", price: 5 },
-  { label: "Durazno", value: "durazno", price: 8 },
-  { label: "Nuez", value: "nuez", price: 10 },
-  { label: "Almendra", value: "almendra", price: 12 },
-];
-const OTHER_ADDONS = [
-  { label: "Granola", value: "granola", price: 8 },
-  { label: "Frutas", value: "frutas", price: 10 },
-  { label: "Miel", value: "miel", price: 5 },
 ];
 
 type CartItem = {
@@ -101,34 +116,67 @@ type CartItem = {
   totalPrice?: number;
 };
 
+// Update MenuItem type
 type MenuItem = {
   id: number;
   name: string;
   price: number;
   image?: string;
   description?: string;
+  possibleAddons?: AddonKey[];
 };
 
 // Helper function to get addon price
 function getAddonPrice(value: string): number {
-  const allAddons = [...DRINK_ADDONS, ...CREPE_TOPPINGS, ...OTHER_ADDONS];
-  const addon = allAddons.find(a => a.value === value);
-  return addon?.price || 0;
+  return ALL_ADDONS[value]?.price || 0;
 }
 
 // Helper function to calculate total price with addons
-function calculateTotalPrice(basePrice: number, addons: string[]): number {
+function calculateTotalPrice(basePrice: number, addons: string[], itemName?: string): number {
+  // Special pricing for crepes and hot cakes: first 2 toppings free
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+    if (addons.length <= 2) {
+      return basePrice; // First 2 toppings are free
+    } else {
+      // Charge for toppings beyond the first 2
+      const paidAddons = addons.slice(2);
+      const addonTotal = paidAddons.reduce((sum, addon) => sum + getAddonPrice(addon), 0);
+      return basePrice + addonTotal;
+    }
+  } else if (itemName && itemName.toLowerCase().includes('marquesita')) {
+    if (addons.length <= 1) {
+      return basePrice; // First 1 topping is free
+    } else {
+      // Charge for toppings beyond the first 1
+      const paidAddons = addons.slice(1);
+      const addonTotal = paidAddons.reduce((sum, addon) => sum + getAddonPrice(addon), 0);
+      return basePrice + addonTotal;
+    }
+  }
+
+  // Regular pricing for other items
   const addonTotal = addons.reduce((sum, addon) => sum + getAddonPrice(addon), 0);
   return basePrice + addonTotal;
 }
 
-// Helper function to get addon details with prices
-function getAddonDetails(addons: string[]): { label: string; price: number }[] {
-  const allAddons = [...DRINK_ADDONS, ...CREPE_TOPPINGS, ...OTHER_ADDONS];
+// Helper function to get addon details with prices (updated for special pricing)
+function getAddonDetails(addons: string[], itemName?: string): { label: string; price: number }[] {
+  // Special pricing for crepes, hot cakes, fresas con crema: first 2 toppings free
+  if (itemName && (itemName.toLowerCase().includes('crepa') || itemName.toLowerCase().includes('hot cake') || itemName.toLowerCase().includes('fresas con crema'))) {
+    return addons.map((value, index) => {
+      const addon = ALL_ADDONS[String(value)];
+      const price = index < 2 ? 0 : (addon?.price || 0); // First 2 are free
+      return {
+        label: addon?.label || String(value).replace(/_/g, ' '),
+        price: price
+      };
+    });
+  }
+  // Regular pricing for other items
   return addons.map(value => {
-    const addon = allAddons.find(a => a.value === value);
+    const addon = ALL_ADDONS[String(value)];
     return {
-      label: addon?.label || value.replace(/_/g, ' '),
+      label: addon?.label || String(value).replace(/_/g, ' '),
       price: addon?.price || 0
     };
   });
@@ -149,7 +197,7 @@ export default function Home() {
   const [bankInfo, setBankInfo] = useState("");
   const router = useRouter();
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
-  const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '16oz', addons: [] as string[], notes: '' });
+  const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '', addons: [] as string[], notes: '' });
 
   function addToCart(item: { id: number; name: string; price: number; options?: { hotCold?: string; size?: string; addons?: string[]; notes?: string } }) {
     clientLogger.info('Add to cart', item);
@@ -157,10 +205,26 @@ export default function Home() {
     // Calculate addon prices and total
     const addons = item.options?.addons || [];
     const addonPrices: { [key: string]: number } = {};
-    addons.forEach(addon => {
-      addonPrices[addon] = getAddonPrice(addon);
-    });
-    const totalPrice = calculateTotalPrice(item.price, addons);
+
+    // Special pricing for crepes and hot cakes
+    if (item.name.toLowerCase().includes('crepa') || item.name.toLowerCase().includes('hot cake') || item.name.toLowerCase().includes('fresas con crema')) {
+      addons.forEach((addon, index) => {
+        // First 2 toppings are free, charge for additional ones
+        addonPrices[addon] = index < 2 ? 0 : getAddonPrice(addon);
+      });
+    } else if (item.name.toLowerCase().includes('marquesitas')) {
+      addons.forEach((addon, index) => {
+        // First 1 topping is free, charge for additional ones
+        addonPrices[addon] = index < 1 ? 0 : getAddonPrice(addon);
+      });
+    } else {
+      // Regular pricing for other items
+      addons.forEach(addon => {
+        addonPrices[addon] = getAddonPrice(addon);
+      });
+    }
+
+    const totalPrice = calculateTotalPrice(item.price, addons, item.name);
 
     const cartItem: CartItem = {
       ...item,
@@ -253,9 +317,9 @@ export default function Home() {
         let details = '';
         if (item.options) {
           if (item.options.hotCold) details += ` (${item.options.hotCold})`;
-          if (item.options.size) details += ` [${item.options.size}]`;
+          if (item.options.size && item.options.size !== '') details += ` [${item.options.size}]`;
           if (item.options.addons && item.options.addons.length > 0) {
-            const addonDetails = getAddonDetails(item.options.addons);
+            const addonDetails = getAddonDetails(item.options.addons, item.name);
             details += `\n  + ${addonDetails.map(addon =>
               `${addon.label}${addon.price > 0 ? ` (+$${addon.price})` : ''}`
             ).join(', ')}`;
@@ -353,10 +417,16 @@ export default function Home() {
   function openCustomizeModal(item: MenuItem) {
     // Default hot/cold for drinks, toppings for crepes, etc.
     let hotCold = '';
+    let size = '';
+
+    // Check if it's a drink (has hot/cold option)
     if (item.name.toLowerCase().includes('latte') || item.name.toLowerCase().includes('americano') || item.name.toLowerCase().includes('cappuchino') || item.name.toLowerCase().includes('moka') || item.name.toLowerCase().includes('chai') || item.name.toLowerCase().includes('matcha') || item.name.toLowerCase().includes('chocolate')) {
       hotCold = 'caliente';
+      size = '16oz'; // Set size for drinks
     }
-    setCustomOptions({ hotCold, size: '16oz', addons: [], notes: '' });
+    // For food items, size remains empty string
+
+    setCustomOptions({ hotCold, size, addons: [], notes: '' });
     setCustomizingItem(item);
   }
 
@@ -379,7 +449,7 @@ export default function Home() {
 
   return (
     <div className="bg-parchment min-h-screen text-black font-nunito relative z-10 overflow-hidden">
-      {/* Alo! Banner background - responsive for web and mobile */}      
+      {/* Alo! Banner background - responsive for web and mobile */}
       {/* <div className="absolute top-0 left-0 w-full h-40 md:h-[30vw] lg:h-[22vw] z-0 pointer-events-none flex justify-center">
         <img
           src="/alo-banner.png"
@@ -448,43 +518,52 @@ export default function Home() {
                 ) : (
                   <>
                     <ul className="mb-4 flex-1 overflow-y-auto text-black">
-                      {cart.map(item => (
-                        <li key={item.id + JSON.stringify(item.options)} className="flex flex-col gap-1 mb-4 pb-4 border-b border-gray-200">
-                          <div className="flex justify-between items-center">
-                            <span className="font-bold text-lg flex items-center gap-2">
-                              {item.qty} x {item.name}
-                            </span>
-                            <span className="font-bold text-verde text-lg">${item.totalPrice || item.price} MXN</span>
-                          </div>
-                          <div className="flex flex-col ml-2 mt-1 gap-1">
-                            <span className="text-xs text-gray-500">Base: ${item.price} {item.totalPrice && item.totalPrice > item.price && (<>&nbsp;Add-ons: ${item.totalPrice - item.price}</>)}</span>
-                            {item.options?.hotCold && <span className="text-sm">• {item.options.hotCold === 'frio' ? 'Frío' : 'Caliente'}</span>}
-                            {item.options?.size && <span className="text-sm">• Tamaño: {item.options.size}</span>}
-                            {item.options?.addons && item.options.addons.length > 0 && (
-                              <div className="text-sm flex flex-col gap-0.5 mt-1">
-                                <span className="font-semibold">• Add-ons:</span>
-                                <ul className="ml-4 list-disc">
-                                  {getAddonDetails(item.options.addons ?? []).map((addon, idx) => {
-                                    const price = item.addonPrices?.[item.options?.addons?.[idx] ?? ''] || 0;
-                                    return (
-                                      <li key={addon.label} className="flex justify-between text-xs">
-                                        <span>{addon.label}</span>
-                                        {price > 0 && <span className="text-gray-500 ml-2">+${price}</span>}
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              </div>
-                            )}
-                            {item.options?.notes && <span className="text-xs text-gray-700">• Nota: {item.options.notes}</span>}
-                          </div>
-                          <div className="flex items-center gap-2 mt-2">
-                            <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
-                            <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
-                            <button onClick={() => removeFromCart(item.id)} className="text-red-500 font-semibold">Eliminar</button>
-                          </div>
-                        </li>
-                      ))}
+                      {cart.map(item => {
+                        const isSpecialToppingItem = ["crepa", "hot cake", "fresas con crema", "marquesita"].some(keyword => item.name.toLowerCase().includes(keyword));
+                        return (
+                          <li key={item.id + JSON.stringify(item.options)} className="flex flex-col gap-1 mb-4 pb-4 border-b border-gray-200">
+                            <div className="flex justify-between items-center">
+                              <span className="font-bold text-lg flex items-center gap-2">
+                                {item.qty} x {item.name}
+                              </span>
+                              <span className="font-bold text-verde text-lg">${item.totalPrice || item.price} MXN</span>
+                            </div>
+                            <div className="flex flex-col ml-2 mt-1 gap-1">
+                              <span className="text-xs text-gray-500">Base: ${item.price} {item.totalPrice && item.totalPrice > item.price && (<>&nbsp;Add-ons: ${item.totalPrice - item.price}</>)}</span>
+                              {item.options?.hotCold && <span className="text-sm">• {item.options.hotCold === 'frio' ? 'Frío' : 'Caliente'}</span>}
+                              {item.options?.size && item.options.size !== '' && <span className="text-sm">• Tamaño: {item.options.size}</span>}
+                              {item.options?.addons && item.options.addons.length > 0 && (
+                                <div className="text-sm flex flex-col gap-0.5 mt-1">
+                                  <span className="font-semibold">• Add-ons:</span>
+                                  {isSpecialToppingItem && (
+                                    <span className="text-xs text-gray-500">Primeros 2 toppings gratis, después se cobra cada uno.</span>
+                                  )}
+                                  <ul className="ml-4 list-disc">
+                                    {getAddonDetails(item.options.addons ?? [], item.name).map((addon, idx) => {
+                                      const key = item.options?.addons?.[idx];
+                                      const price = key ? item.addonPrices?.[String(key)] || 0 : 0;
+                                      return (
+                                        <li key={addon.label} className="flex justify-between text-xs">
+                                          <span>{addon.label}</span>
+                                          {isSpecialToppingItem
+                                            ? (idx >= 2 && price > 0 && <span className="text-gray-500 ml-2">+${price}</span>)
+                                            : (price > 0 && <span className="text-gray-500 ml-2">+${price}</span>)}
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                </div>
+                              )}
+                              {item.options?.notes && <span className="text-xs text-gray-700">• Nota: {item.options.notes}</span>}
+                            </div>
+                            <div className="flex items-center gap-2 mt-2">
+                              <button onClick={() => updateQty(item.id, Math.max(1, item.qty - 1))} className="px-2">-</button>
+                              <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-2">+</button>
+                              <button onClick={() => removeFromCart(item.id)} className="text-red-500 font-semibold">Eliminar</button>
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                     <div className="border-t pt-3 mb-3">
                       <div className="flex justify-between items-center text-lg font-bold">
@@ -566,6 +645,14 @@ export default function Home() {
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full flex flex-col items-center">
             <h2 className="text-xl font-bold mb-2 text-verde">Personaliza tu pedido</h2>
             <p className="mb-2 text-center font-semibold">{customizingItem.name}</p>
+            <p className="mb-2 text-center text-gray-500 font-semibold">{customizingItem.description}</p>
+            {customizingItem.image && (
+              <Image
+                src={customizingItem.image}
+                alt={customizingItem.name}
+                className="w-full max-w-xs h-32 object-cover rounded-xl mb-2 mx-auto"
+              />
+            )}
             {/* Hot/Cold for drinks */}
             {customizingItem.name.match(/americano|latte|cappuchino|moka|chai|matcha|chocolate/i) && (
               <div className="mb-2 w-full">
@@ -576,56 +663,54 @@ export default function Home() {
                 </div>
               </div>
             )}
-            {/* Size (only 16oz for now) */}
-            <div className="mb-2 w-full">
-              <label className="block font-semibold mb-1">Tamaño</label>
-              <select className="w-full p-2 border rounded bg-gray-100" value={customOptions.size} disabled>
-                <option value="16oz">16 oz</option>
-              </select>
-            </div>
+            {/* Size (only for drinks) */}
+            {customizingItem.name.match(/americano|latte|cappuchino|moka|chai|matcha|chocolate|naranja|verde|zanahoria/i) && (
+              <div className="mb-2 w-full">
+                <label className="block font-semibold mb-1">Tamaño</label>
+                <select className="w-full p-2 border rounded bg-gray-100" value={customOptions.size} disabled>
+                  <option value="16oz">16 oz</option>
+                </select>
+              </div>
+            )}
             {/* Add-ons/toppings */}
-            {customizingItem.name.match(/crepa|crepas/i) ? (
-              <div className="mb-2 w-full">
-                <label className="block font-semibold mb-1">Toppings (elige hasta 2)</label>
-                <div className="flex flex-wrap gap-2">
-                  {CREPE_TOPPINGS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value, 2)}>
-                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : customizingItem.name.match(/americano|latte|cappuchino|moka|chai|matcha|chocolate/i) ? (
+            {customizingItem.possibleAddons && customizingItem.possibleAddons.length > 0 && (
               <div className="mb-2 w-full">
                 <label className="block font-semibold mb-1">Add-ons</label>
                 <div className="flex flex-wrap gap-2">
-                  {DRINK_ADDONS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>
-                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
-                    </button>
-                  ))}
+                  {customizingItem.possibleAddons.map(key => {
+                    const isSpecialToppingItem = ["crepa", "hot cake", "fresas con crema"].some(keyword =>
+                      customizingItem.name.toLowerCase().includes(keyword)
+                    );
+                    const isSpecialToppingItemOnlyOne = ["marquesita"].some(keyword =>
+                      customizingItem.name.toLowerCase().includes(keyword)
+                    );
+                    const selectedCount = customOptions.addons.length;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(String(key)) ? 'bg-verde text-white' : 'bg-gray-100'}`}
+                        onClick={() => handleAddonToggle(String(key))}
+                      >
+                        {ALL_ADDONS[String(key)].label}
+                        {/* Special topping item with 2 free toppings */}
+                        {isSpecialToppingItem ? (selectedCount >= 2 && ALL_ADDONS[String(key)].price > 0 && !customOptions.addons.includes(String(key)) ? ` (+$${ALL_ADDONS[String(key)].price})` : '') : ('')}
+                        {/* Special topping item with 1 free topping */}
+                        {isSpecialToppingItemOnlyOne ? (selectedCount >= 1 && ALL_ADDONS[String(key)].price > 0 && !customOptions.addons.includes(String(key)) ? ` (+$${ALL_ADDONS[String(key)].price})` : '') : ('')}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            ) : customizingItem.name.match(/hot cake|sandwich|pan francés|fresas|marquesita/i) ? (
-              <div className="mb-2 w-full">
-                <label className="block font-semibold mb-1">Add-ons</label>
-                <div className="flex flex-wrap gap-2">
-                  {OTHER_ADDONS.map(opt => (
-                    <button key={opt.value} type="button" className={`px-2 py-1 rounded border text-xs ${customOptions.addons.includes(opt.value) ? 'bg-verde text-white' : 'bg-gray-100'}`} onClick={() => handleAddonToggle(opt.value)}>
-                      {opt.label}{opt.price > 0 ? ` (+$${opt.price})` : ''}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
+            )}
             {/* Price display */}
             <div className="mb-2 w-full text-center">
               <div className="text-lg font-bold text-verde">
-                ${calculateTotalPrice(customizingItem.price, customOptions.addons)} MXN
+                ${calculateTotalPrice(customizingItem.price, customOptions.addons, customizingItem.name)} MXN
               </div>
               {customOptions.addons.length > 0 && (
                 <div className="text-xs text-gray-500">
-                  Base: ${customizingItem.price} + Add-ons: ${calculateTotalPrice(customizingItem.price, customOptions.addons) - customizingItem.price}
+                  Base: ${customizingItem.price} + Add-ons: ${calculateTotalPrice(customizingItem.price, customOptions.addons, customizingItem.name) - customizingItem.price}
                 </div>
               )}
             </div>
