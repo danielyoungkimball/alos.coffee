@@ -590,7 +590,7 @@ export default function Home() {
                       </p>
                     </div>
                   )}
-                  <button type="submit" className="mt-6 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
+                  <button type="submit" className="mt-2 mb-2 px-6 py-3 bg-green-600 text-white rounded-lg font-bold text-lg shadow hover:bg-green-700 transition-colors w-full">Checkout</button>
                 </form>
               </div>
             </aside>
