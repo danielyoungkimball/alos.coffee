@@ -11,12 +11,13 @@
   "dependencies": {
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.3.1",
+    "@supabase/supabase-js": "^2.50.2",
     "next": "15.2.0",
+    "pino": "^8.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "stripe": "^18.2.1",
-    "twilio": "^5.7.1",
-    "pino": "^8.0.0"
+    "twilio": "^5.7.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

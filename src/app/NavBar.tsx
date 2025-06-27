@@ -18,6 +18,7 @@ export default function NavBar() {
         <Link href="/menu" className="hover:underline">Menú</Link>
         <Link href="/about" className="hover:underline">Sobre Nosotros</Link>
         <Link href="/contact" className="hover:underline">Contacto</Link>
+        <Link href="/settings" className="hover:underline text-sm opacity-70" title="Configuración">⚙️</Link>
       </div>
       {/* Hamburger for Mobile */}
       <button

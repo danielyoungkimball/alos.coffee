@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { loadStripe } from '@stripe/stripe-js';
 import clientLogger from '@/lib/clientLogger';
 import { useRouter } from "next/navigation";
@@ -156,6 +156,38 @@ export default function Home() {
   const router = useRouter();
   const [customizingItem, setCustomizingItem] = useState<MenuItem | null>(null);
   const [customOptions, setCustomOptions] = useState({ hotCold: '', size: '', addons: [] as string[], notes: '' });
+  const [disabledItems, setDisabledItems] = useState<number[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load disabled items on component mount
+  useEffect(() => {
+    loadDisabledItems();
+  }, []);
+
+  const loadDisabledItems = async () => {
+    try {
+      const response = await fetch('/api/settings/disabled-items');
+      if (response.ok) {
+        const data = await response.json();
+        setDisabledItems(data.disabledItems || []);
+      }
+    } catch (error) {
+      console.error('Error loading disabled items:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Filter menu to exclude disabled items
+  const getFilteredMenu = () => {
+    return MENU.map(section => ({
+      ...section,
+      groups: section.groups.map(group => ({
+        ...group,
+        items: group.items // Don't filter items, show all including disabled ones
+      }))
+    }));
+  };
 
   function addToCart(item: { id: number; name: string; price: number; options?: { hotCold?: string; size?: string; addons?: string[]; notes?: string } }) {
     clientLogger.info('Add to cart', item);
@@ -388,6 +420,11 @@ export default function Home() {
   }
 
   function openCustomizeModal(item: MenuItem) {
+    // Don't allow customization of disabled items
+    if (disabledItems.includes(item.id)) {
+      return;
+    }
+
     // Default hot/cold for drinks, toppings for crepes, etc.
     let hotCold = '';
     let size = '';
@@ -420,6 +457,16 @@ export default function Home() {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="bg-parchment min-h-screen text-black font-nunito relative z-10 overflow-hidden flex items-center justify-center">
+        <div className="text-2xl text-verde">Cargando menú...</div>
+      </div>
+    );
+  }
+
+  const filteredMenu = getFilteredMenu();
+
   return (
     <div className="bg-parchment min-h-screen text-black font-nunito relative z-10 overflow-hidden">
       {/* Alo! Banner background - responsive for web and mobile */}
@@ -434,7 +481,7 @@ export default function Home() {
       <section className="flex flex-col items-center justify-center min-h-[60vh] md:min-h-[80vh] text-center p-4 md:p-8">
         <h2 className="text-3xl md:text-5xl font-sansita font-bold mb-4 text-verde">Menú</h2>
         <div className="space-y-10 w-full max-w-3xl">
-          {MENU.map((section) => (
+          {filteredMenu.map((section) => (
             <div key={section.category}>
               <h2 className="text-2xl md:text-3xl font-sansita font-bold mb-4 text-verde">{section.category}</h2>
               {section.groups.map((group) => (
@@ -443,8 +490,23 @@ export default function Home() {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full">
                     {group.items.map(item => {
                       const menuItem = item as MenuItem;
+                      const isDisabled = disabledItems.includes(menuItem.id);
                       return (
-                        <div key={menuItem.id} className="bg-white rounded-xl shadow-lg flex flex-col items-center p-2 relative aspect-square group hover:shadow-2xl transition-all">
+                        <div 
+                          key={menuItem.id} 
+                          className={`bg-white rounded-xl shadow-lg flex flex-col items-center p-2 relative aspect-square group transition-all ${
+                            isDisabled 
+                              ? 'opacity-60 grayscale cursor-not-allowed' 
+                              : 'hover:shadow-2xl'
+                          }`}
+                        >
+                          {isDisabled && (
+                            <div className="absolute inset-0 bg-opacity-20 rounded-xl flex items-center justify-center z-10">
+                              <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
+                                AGOTADO
+                              </div>
+                            </div>
+                          )}
                           {menuItem.image && (
                             <div className="w-full h-32 md:h-40 flex items-center justify-center overflow-hidden rounded-lg">
                               <Image src={menuItem.image} alt={menuItem.name} width={200} height={200} className="object-cover w-full h-full" />
@@ -454,13 +516,15 @@ export default function Home() {
                             <span className="font-bold text-lg text-verde text-center">{menuItem.name.replace(/^[^a-zA-ZáéíóúÁÉÍÓÚüÜñÑ]+/, '')}</span>
                             <span className="font-semibold text-black text-center">${menuItem.price} MXN</span>
                           </div>
-                          <button
-                            onClick={() => openCustomizeModal(menuItem)}
-                            className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-2xl shadow-lg border-2 border-white transition-all"
-                            aria-label={`Agregar ${menuItem.name}`}
-                          >
-                            +
-                          </button>
+                          {!isDisabled && (
+                            <button
+                              onClick={() => openCustomizeModal(menuItem)}
+                              className="absolute bottom-2 right-2 bg-green-500 hover:bg-green-600 text-white rounded-full w-8 h-8 flex items-center justify-center text-2xl shadow-lg border-2 border-white transition-all"
+                              aria-label={`Agregar ${menuItem.name}`}
+                            >
+                              +
+                            </button>
+                          )}
                         </div>
                       );
                     })}
