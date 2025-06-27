@@ -208,7 +208,7 @@ export default function SettingsPage() {
           )}
 
           <p className="text-gray-600 mb-4">
-            Marca los elementos que están agotados para mostrarlos como "AGOTADO" en el menú público.
+            Marca los elementos que están agotados para mostrarlos como &quot;AGOTADO&quot; en el menú público.
           </p>
         </div>
 
