@@ -503,7 +503,7 @@ export default function Home() {
                           {isDisabled && (
                             <div className="absolute inset-0 bg-opacity-20 rounded-xl flex items-center justify-center z-10">
                               <div className="bg-red-600 text-white px-3 py-1 rounded-full text-sm font-bold">
-                                AGOTADO
+                                NO DISPONIBLE
                               </div>
                             </div>
                           )}

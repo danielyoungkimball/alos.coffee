@@ -208,7 +208,7 @@ export default function SettingsPage() {
           )}
 
           <p className="text-gray-600 mb-4">
-            Marca los elementos que están agotados para mostrarlos como &quot;AGOTADO&quot; en el menú público.
+            Marca los elementos que están no disponibles para mostrarlos como &quot;NO DISPONIBLE&quot; en el menú público.
           </p>
         </div>
 
@@ -243,7 +243,7 @@ export default function SettingsPage() {
                           <div className="flex items-center">
                             {disabledItems.includes(item.id) ? (
                               <span className="text-red-600 text-sm font-bold">
-                                AGOTADO
+                                NO DISPONIBLE
                               </span>
                             ) : (
                               <span className="text-green-600 text-sm font-bold">
@@ -276,7 +276,7 @@ export default function SettingsPage() {
               <div className="text-2xl font-bold text-red-600">
                 {disabledItems.length}
               </div>
-              <div className="text-red-800">Elementos Agotados</div>
+              <div className="text-red-800">Elementos No Disponibles</div>
             </div>
           </div>
         </div>
