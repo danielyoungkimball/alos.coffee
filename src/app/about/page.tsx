@@ -12,7 +12,7 @@ export default function About() {
       />
       <h1 className="text-4xl font-bold mb-4 text-espresso">Sobre Nosotros</h1>
       <p className="max-w-2xl text-lg mb-6 text-black">
-        Alo! Coffee & Bakery nació de una pasión por el café de y la repostería.
+        Alo! Coffee & Bakery nació de una pasión por el café y la repostería.
         Somos un equipo familiar dedicado a crear experiencias cálidas y
         deliciosas para nuestra comunidad. Nuestra misión es ofrecer bebidas y
         alimentos frescos, preparados con amor y los mejores ingredientes.
